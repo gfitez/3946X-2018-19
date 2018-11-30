@@ -1,6 +1,7 @@
 #pragma config(Sensor, in1,    leftLift,       sensorPotentiometer)
 #pragma config(Sensor, in2,    rightLift,      sensorPotentiometer)
 #pragma config(Sensor, in3,    rotatorPot,     sensorPotentiometer)
+#pragma config(Sensor, in4,    clawPot,        sensorPotentiometer)
 #pragma config(Sensor, dgtl9,  leftDriveQuad,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl11, rightDriveQuad, sensorQuadEncoder)
 #pragma config(Motor,  port2,           topLift,       tmotorVex393_MC29, openLoop)
@@ -38,10 +39,7 @@ void pre_auton()
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-task autonomous()
-{
 
-}
 
 void runLeftDrive(int speed){
 	motor[leftDrive] = speed;
@@ -58,7 +56,7 @@ void lift(int speed){
 	motor[bottomLift]=speed;
 
 }
-task clawControl{
+task rotatorPID{
 	while(1){
 		if(vexRT[Btn8R]){
 			motor[rotator]=127;
@@ -200,6 +198,26 @@ void pTurn(int distance){
 
 }
 
+void runClawPID(PIDStruct clawPID){
+
+	clawPID.pGain=0.2;
+	clawPID.iGain=0;
+	clawPID.dGain=0;
+
+	clawPID.position=SensorValue[clawPot];
+	motor[claw]=-runPID(clawPID);
+}
+
+void runRotatorPID(PIDStruct rotatorPID){
+
+	rotatorPID.pGain=0.4;
+	rotatorPID.iGain=0;
+	rotatorPID.dGain=0;
+
+	rotatorPID.position=SensorValue[rotatorPot];
+	motor[rotator]=-runPID(rotatorPID);
+}
+
 void nearAuton(int side){
 	pDrive(-2900);
 	motor[slingshot]=127;
@@ -207,9 +225,10 @@ void nearAuton(int side){
 	motor[slingshot]=0;
 	pTurn(200 * side);
 	pDrive(-1700);
-	pDrive(8000);
-	pTurn(1300 * side)
-	pDrive(3400)
+	//pTurn(130 * side);
+	pDrive(7300);
+	pTurn(1020 * side)
+	pDrive(3600)
 }
 
 void farAuton(int side){
@@ -222,24 +241,23 @@ void farAuton(int side){
 	motor[claw] = -50;
 
 
-
-
-
-
-
-
-
+}
+task autonomous()
+{
+	nearAuton(-1);
 }
 task usercontrol()
 {
-	startTask(clawControl);
 	startTask(liftControl);
-
+	bool clawClosed=true;
+	PIDStruct clawPID;
+	PIDStruct rotatorPID;
+	rotatorPID.target=4050;
   while (true)
   {
 		if(vexRT[Btn5D]){
-			farAuton(-1);
-			//nearAuton(1);
+			//farAuton(-1);
+			nearAuton(-1);
 			//pTurn(1000);
 		}
 		if( abs(vexRT[Ch1]) > 10 || abs(vexRT[Ch3]) > 10 ){
@@ -270,9 +288,13 @@ task usercontrol()
 			lift(0);
   	}**/
 
-  	if(vexRT[Btn7R]) motor[claw]=127;
-  	else if(vexRT[Btn7L]) motor[claw]=-127;
-		else motor[claw]=0;
+  	if(vexRT[Btn7R])clawPID.target=1100;
+  	else if(vexRT[Btn7L]) clawPID.target=0;
+  	if(vexRT[Btn8L])rotatorPID.target=4050;
+  	else if(vexRT[Btn8R]) rotatorPID.target=3200;
+
+		runClawPID(clawPID);
+		runRotatorPID(rotatorPID);
 
   }
 }
