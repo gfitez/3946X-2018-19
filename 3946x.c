@@ -58,7 +58,7 @@ void lift(int speed){
 }
 task rotatorPID{
 	while(1){
-		if(vexRT[Btn8R]){
+		if(vexRT[btn8R]){
 			motor[rotator]=127;
 			//wait1Msec(1100);
 		}else if(vexRT[Btn8L]){
@@ -210,7 +210,7 @@ void runClawPID(PIDStruct clawPID){
 
 void runRotatorPID(PIDStruct rotatorPID){
 
-	rotatorPID.pGain=0.4;
+	rotatorPID.pGain=0.1;
 	rotatorPID.iGain=0;
 	rotatorPID.dGain=0;
 
@@ -219,47 +219,67 @@ void runRotatorPID(PIDStruct rotatorPID){
 }
 
 void nearAuton(int side){
-	pDrive(-2900);
+	pDrive(-1650);
+	//motor[claw] = 20;
 	motor[slingshot]=127;
 	wait1Msec(2700);
 	motor[slingshot]=0;
-	pTurn(200 * side);
-	pDrive(-1700);
-	//pTurn(130 * side);
-	pDrive(7300);
-	pTurn(1020 * side)
-	pDrive(3600)
+	pTurn(90 * side);
+	pDrive(-2870);
+	pTurn(60 * side);
+	pDrive(7400);
+	pTurn(1220 * side)
+	pDrive(7000)
 }
 
 void farAuton(int side){
-	pTurn(-1300 * side);
-	pDrive(2500);
-	pTurn(1300 * side);
-	pDrive(3000);
-	motor[claw] = 50;
-	pDrive(600);
-	motor[claw] = -50;
-
-
+//right is 1, left is -1
+	motor[slingshot]=127;
+	wait1Msec(2700);
+	motor[slingshot]=0;
+	pTurn(-800 * side);
+	pDrive(5000);
+	motor[claw] = -60;
+	wait1Msec(600);
+	pDrive(200);
+	motor[claw] = 0;
+	lift(70);
+	motor[rotator] = 50;
+	wait1Msec(1000);
+	motor[rotator] = 0
+	lift(0);
 }
+
+void farAuton2(int side){
+	pDrive(-1100);
+	motor[slingshot]=127;
+	wait1Msec(2700);
+	motor[slingshot]=0;
+	wait1Msec(3000);
+	pDrive(-1375);
+	pTurn(1220 * side);
+	pDrive(5000);
+}
+
 task autonomous()
 {
-	nearAuton(-1);
+	farAuton2(-1);
 }
 task usercontrol()
 {
 	startTask(liftControl);
-	bool clawClosed=true;
+	bool clawIdle=true;
 	PIDStruct clawPID;
 	PIDStruct rotatorPID;
-	rotatorPID.target=4050;
+	rotatorPID.target=3850;
   while (true)
   {
-		if(vexRT[Btn5D]){
-			//farAuton(-1);
-			nearAuton(-1);
-			//pTurn(1000);
+		if(vexRT[Btn7U]){
+			//this is made for testing auton
+			//NEEDS TO BE COMMENTED OUT WHEN IN MATCHES
+
 		}
+
 		if( abs(vexRT[Ch1]) > 10 || abs(vexRT[Ch3]) > 10 ){
 			runLeftDrive(vexRT[Ch3]);
 			runRightDrive(vexRT[Ch2]);
@@ -276,6 +296,8 @@ task usercontrol()
 
 		if(vexRT[Btn5U]){
 			motor[intake] = 127;
+		}else if(vexRT[Btn5D]){
+			motor[intake] = -127;
 		}else{
 			motor[intake] = 0;
 		}
@@ -288,12 +310,16 @@ task usercontrol()
 			lift(0);
   	}**/
 
-  	if(vexRT[Btn7R])clawPID.target=1100;
-  	else if(vexRT[Btn7L]) clawPID.target=0;
-  	if(vexRT[Btn8L])rotatorPID.target=4050;
-  	else if(vexRT[Btn8R]) rotatorPID.target=3200;
+  	if(vexRT[Btn7RXmtr2]){clawPID.target=1250;clawIdle=false;}
+  	else if(vexRT[Btn7LXmtr2]){ clawPID.target=50;clawIdle=false;}
+  	if(vexRT[Btn8LXmtr2])rotatorPID.target=3850;
+  	else if(vexRT[Btn8RXmtr2]) rotatorPID.target=605;
 
-		runClawPID(clawPID);
+
+  	if(vexRT[Btn7DXmtr2])clawIdle=true;
+
+  	if(clawIdle)motor[claw]=0;
+		else runClawPID(clawPID);
 		runRotatorPID(rotatorPID);
 
   }
