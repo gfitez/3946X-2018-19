@@ -127,13 +127,15 @@ task liftControl{
 		if(vexRT[Btn6U]){
 			liftPID.target=SensorValue[rightLift];
 			lift(90);
-		}
-		if(vexRT[Btn6D]){
+		}else if(vexRT[Btn6D]){
 			liftPID.target=SensorValue[rightLift];
-			lift(-40);
+			if(SensorValue[rightLift]>900)lift(-40);
+			else lift(-127);
+		}else{
+			lift(runPID(liftPID));
 		}
 		liftPID.position=SensorValue[rightLift];
-		lift(runPID(liftPID));
+
 	}
 }
 int driveQuadAvg(){
@@ -310,7 +312,7 @@ task usercontrol()
 			lift(0);
   	}**/
 
-  	if(vexRT[Btn7RXmtr2]){clawPID.target=1250;clawIdle=false;}
+  	if(vexRT[Btn7RXmtr2]){clawPID.target=850;clawIdle=false;}
   	else if(vexRT[Btn7LXmtr2]){ clawPID.target=50;clawIdle=false;}
   	if(vexRT[Btn8LXmtr2])rotatorPID.target=3850;
   	else if(vexRT[Btn8RXmtr2]) rotatorPID.target=605;
