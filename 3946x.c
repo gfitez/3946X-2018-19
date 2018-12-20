@@ -58,7 +58,30 @@ void lift(int speed){
 	motor[topLift]=speed;
 
 }
-task rotatorPID{
+
+
+
+typedef struct{
+	float pGain;
+	float iGain;
+	float dGain;
+	float iMin;
+	float iMax;
+	float iState;
+
+	float position;
+	float target;
+
+	int lastRan;
+	float prevError;
+} PIDStruct;
+
+PIDStruct rotatorPID;
+int rotatorLowPos=605;
+int rotatorHighPos=3850;
+
+
+task rotatorPIDTask{
 	while(1){
 		if(vexRT[btn8R]){
 			motor[rotator]=127;
@@ -77,20 +100,7 @@ task rotatorPID{
 
 
 
-typedef struct{
-	float pGain;
-	float iGain;
-	float dGain;
-	float iMin;
-	float iMax;
-	float iState;
 
-	float position;
-	float target;
-
-	int lastRan;
-	float prevError;
-} PIDStruct;
 
 
 //http://robotsforroboticists.com/pid-control/
@@ -117,9 +127,9 @@ int runPID(PIDStruct PIDData){
 
 	return pTerm+iTerm+dTerm
 }
-
+PIDStruct liftPID
 task liftControl{
-	PIDStruct liftPID
+
 	liftPID.pGain=0.35;
 	liftPID.iGain=0;
 	liftPID.dGain=0;
@@ -127,13 +137,17 @@ task liftControl{
 	while(1){
 
 		if(vexRT[Btn6U]){
-			liftPID.target+=0.4;
-			if(liftPID.target>2300)liftPID.target=2300;
+			//liftPID.target+=0.4;
+			//if(liftPID.target>2300)liftPID.target=2300;
+			liftPID.target=1900;
+	}else if(vexRT[Btn5U]){
+			liftPID.target=1450;
 		}else if(vexRT[Btn6D]){
-			liftPID.target-=0.4;
-			if(liftPID.target<675)liftPID.target=675;
+			liftPID.target=550;
+			//liftPID.target-=0.4;
+			//if(liftPID.target<640)liftPID.target=640;
 		}
-			lift(runPID(liftPID));
+		lift(runPID(liftPID));
 
 		liftPID.position=SensorValue[rightLift];
 
@@ -222,16 +236,18 @@ void runRotatorPID(PIDStruct rotatorPID){
 }
 
 void nearAuton(int side){
-	pDrive(-1650);
+	pDrive(-250);
 	//motor[claw] = 20;
+	startTask(liftControl);
+	liftPID.target = 850;
 	motor[slingshot]=127;
-	wait1Msec(2700);
+	wait1Msec(3500);
 	motor[slingshot]=0;
-	pTurn(90 * side);
-	pDrive(-2870);
+	pTurn(82 * side);
+	pDrive(-900);
 	pTurn(60 * side);
-	pDrive(7400);
-	pTurn(1220 * side)
+	pDrive(2500);
+	pTurn(50 * side)
 	pDrive(7000)
 }
 
@@ -268,24 +284,27 @@ task autonomous()
 {
 	farAuton2(-1);
 }
+
+
 task usercontrol()
 {
 	startTask(liftControl);
 	bool clawIdle=true;
 	PIDStruct clawPID;
-	PIDStruct rotatorPID;
+
 	rotatorPID.target=3850;
   while (true)
   {
 		if(vexRT[Btn7U]){
 			//this is made for testing auton
 			//NEEDS TO BE COMMENTED OUT WHEN IN MATCHES
+			nearAuton(1);
 
 		}
 
-		if( abs(vexRT[Ch1Xmtr2]) > 20 || abs(vexRT[Ch3Xmtr2]) > 20 ){
-			runLeftDrive(vexRT[Ch3Xmtr2]);
-			runRightDrive(vexRT[Ch2Xmtr2]);
+		if( abs(vexRT[Ch1]) > 20 || abs(vexRT[Ch3]) > 20 ){
+			runLeftDrive(vexRT[Ch3]);
+			runRightDrive(vexRT[Ch2]);
 		}else{
 			drive(0);
 		}
@@ -293,30 +312,33 @@ task usercontrol()
 
 		if(vexRT[Btn8U]){
 			motor[slingshot] = 127;
+			liftPID.target=850;
 		}else{
 			motor[slingshot] = 0;
 		}
 
-		if(vexRT[Btn5U]){
+		if(vexRT[Btn7U]){
 			motor[intake] = 127;
-		}else if(vexRT[Btn5D]){
+		}else if(vexRT[Btn7D]){
 			motor[intake] = -127;
 		}else{
 			motor[intake] = 0;
 		}
 
-		/**if(vexRT[Btn6U]){
-			lift(127);
-		}else if(vexRT[Btn6D]){
-			lift(-60);
-		}else{
-			lift(0);
-  	}**/
+		if(vexRT[Btn8UXmtr2]){
+				liftPID.target=2300;
+				wait1Msec(500);
+				if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
+				else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
+
+
+
+		}
 
   	if(vexRT[Btn7RXmtr2]){clawPID.target=850;clawIdle=false;}
   	else if(vexRT[Btn7LXmtr2]){ clawPID.target=50;clawIdle=false;}
-  	if(vexRT[Btn8LXmtr2])rotatorPID.target=3850;
-  	else if(vexRT[Btn8RXmtr2]) rotatorPID.target=605;
+  	if(vexRT[Btn8LXmtr2])rotatorPID.target=rotatorHighPos;
+  	else if(vexRT[Btn8RXmtr2]) rotatorPID.target=rotatorLowPos;
 
 
   	if(vexRT[Btn7DXmtr2])clawIdle=true;
