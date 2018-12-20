@@ -246,43 +246,48 @@ void nearAuton(int side){
 	pTurn(82 * side);
 	pDrive(-900);
 	pTurn(60 * side);
-	pDrive(2500);
-	pTurn(50 * side)
-	pDrive(7000)
+	pDrive(2000);
+	pTurn(330 * side)
+	pDrive(1200)
+}
+
+void nearAuton2(int side){
+	pDrive(-250);
+	//motor[claw] = 20;
+	startTask(liftControl);
+	liftPID.target = 850;
+	motor[slingshot]=127;
+	wait1Msec(3500);
+	motor[slingshot]=0;
+	pTurn(82 * side);
+	pDrive(-900);
+	//turns claw towards ground
+	startTask(rotatorPIDTask);
+	rotatorPID.target = rotatorLowPos;
+	pTurn(60 * side);
+	pDrive(750);
+	liftPID.target = 600;
+	pTurn(330 * side);
+	pDrive(180);
+
 }
 
 void farAuton(int side){
 //right is 1, left is -1
+	startTask(liftControl);
+	liftPID.target = 850;
 	motor[slingshot]=127;
-	wait1Msec(2700);
+	wait1Msec(3500);
 	motor[slingshot]=0;
-	pTurn(-800 * side);
-	pDrive(5000);
-	motor[claw] = -60;
-	wait1Msec(600);
-	pDrive(200);
-	motor[claw] = 0;
-	lift(70);
-	motor[rotator] = 50;
-	wait1Msec(1000);
-	motor[rotator] = 0
-	lift(0);
+	pDrive(-500);
+	pTurn(330 * side);
+	pDrive(1200);
 }
 
-void farAuton2(int side){
-	pDrive(-1100);
-	motor[slingshot]=127;
-	wait1Msec(2700);
-	motor[slingshot]=0;
-	wait1Msec(3000);
-	pDrive(-1375);
-	pTurn(1220 * side);
-	pDrive(5000);
-}
 
 task autonomous()
 {
-	farAuton2(-1);
+	farAuton(-1);
 }
 
 
@@ -298,7 +303,7 @@ task usercontrol()
 		if(vexRT[Btn7U]){
 			//this is made for testing auton
 			//NEEDS TO BE COMMENTED OUT WHEN IN MATCHES
-			nearAuton(1);
+			farAuton(1);
 
 		}
 
