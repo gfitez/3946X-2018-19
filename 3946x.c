@@ -234,7 +234,17 @@ void runRotatorPID(PIDStruct rotatorPID){
 	rotatorPID.position=SensorValue[rotatorPot];
 	motor[rotator]=-runPID(rotatorPID);
 }
-
+task rotatorTask(){
+		while(1)runRotatorPID(rotatorPID);
+}
+bool clawIdle=false;
+PIDStruct clawPID;
+task clawTask(){
+	while(1){
+		if(clawIdle)motor[claw]=0;
+			else runClawPID(clawPID);
+	}
+}
 void nearAuton(int side){
 	pDrive(-250);
 	//motor[claw] = 20;
@@ -250,25 +260,42 @@ void nearAuton(int side){
 	pTurn(330 * side)
 	pDrive(1200)
 }
-
+int autonTime=0;
 void nearAuton2(int side){
-	pDrive(-250);
-	//motor[claw] = 20;
+	clearTimer(T1);
+	startTask(rotatorTask);
 	startTask(liftControl);
+
 	liftPID.target = 850;
+	pDrive(-1050);//Drive backt to hit flag
 	motor[slingshot]=127;
-	wait1Msec(3500);
-	motor[slingshot]=0;
-	pTurn(82 * side);
-	pDrive(-900);
 	//turns claw towards ground
-	startTask(rotatorPIDTask);
 	rotatorPID.target = rotatorLowPos;
-	pTurn(60 * side);
-	pDrive(750);
-	liftPID.target = 600;
-	pTurn(330 * side);
-	pDrive(180);
+	pDrive(675);//drive back
+	pTurn(-75*side);//angle to shoot at mid flag
+	wait1Msec(800);
+	motor[slingshot]=0;
+	liftPID.target = 500;//put lift on ground for claw to grab cap
+	startTask(clawTask);
+	clawPID.target=850;
+	pTurn(410 * side);//turn to face cap
+	pDrive(650);
+	clawPID.target=50;//grap cap
+
+	rotatorPID.target=rotatorHighPos
+	liftPID.target=850;//lift up
+	pDrive(300);
+	clawPID.target=850;
+
+	pTurn(-360*side);//turn to face platform
+	drive(127);
+	wait1msec(2000);
+	drive(-50);
+	wait1Msec(50);
+	drive(0);
+
+
+	autonTime=time1[T1];
 
 }
 
@@ -287,23 +314,25 @@ void farAuton(int side){
 
 task autonomous()
 {
-	farAuton(-1);
+	nearAuton2(-1);
 }
+
 
 
 task usercontrol()
 {
 	startTask(liftControl);
-	bool clawIdle=true;
-	PIDStruct clawPID;
 
+
+	startTask(rotatorTask);
+	startTask(clawTask);
 	rotatorPID.target=3850;
   while (true)
   {
 		if(vexRT[Btn7U]){
 			//this is made for testing auton
 			//NEEDS TO BE COMMENTED OUT WHEN IN MATCHES
-			farAuton(1);
+			//nearAuton2(1);
 
 		}
 
@@ -335,9 +364,6 @@ task usercontrol()
 				wait1Msec(500);
 				if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
 				else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
-
-
-
 		}
 
   	if(vexRT[Btn7RXmtr2]){clawPID.target=850;clawIdle=false;}
@@ -348,9 +374,7 @@ task usercontrol()
 
   	if(vexRT[Btn7DXmtr2])clawIdle=true;
 
-  	if(clawIdle)motor[claw]=0;
-		else runClawPID(clawPID);
-		runRotatorPID(rotatorPID);
+
 
   }
 }
