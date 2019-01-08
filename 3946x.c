@@ -1,4 +1,4 @@
-	#pragma config(Sensor, in1,    leftLift,       sensorPotentiometer)
+#pragma config(Sensor, in1,    leftLift,       sensorPotentiometer)
 #pragma config(Sensor, in2,    rightLift,      sensorPotentiometer)
 #pragma config(Sensor, in3,    rotatorPot,     sensorPotentiometer)
 #pragma config(Sensor, in4,    clawPot,        sensorPotentiometer)
@@ -267,11 +267,11 @@ void nearAuton2(int side){
 	startTask(liftControl);
 
 	liftPID.target = 850;
-	pDrive(-1050);//Drive backt to hit flag
+	pDrive(-1050);//Drive back to hit flag
 	motor[slingshot]=127;
 	//turns claw towards ground
 	rotatorPID.target = rotatorLowPos;
-	pDrive(675);//drive back
+	pDrive(710);//drive back
 	pTurn(-75*side);//angle to shoot at mid flag
 	wait1Msec(800);
 	motor[slingshot]=0;
@@ -285,11 +285,11 @@ void nearAuton2(int side){
 	rotatorPID.target=rotatorHighPos
 	liftPID.target=850;//lift up
 	pDrive(300);
-	clawPID.target=850;
+	clawPID.target=750;
 
-	pTurn(-360*side);//turn to face platform
+	pTurn(-350*side);//turn to face platform
 	drive(127);
-	wait1msec(2000);
+	wait1msec(1800);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
@@ -301,20 +301,54 @@ void nearAuton2(int side){
 
 void farAuton(int side){
 //right is 1, left is -1
+	clearTimer(T1);
+	rotatorPID.target=SensorValue[rotatorPot];
+	startTask(rotatorTask);
 	startTask(liftControl);
+	startTask(clawTask);
+
 	liftPID.target = 850;
 	motor[slingshot]=127;
-	wait1Msec(3500);
+	pDrive(-300);//Drive back to hit flag
+	wait1Msec(2000);
 	motor[slingshot]=0;
-	pDrive(-500);
-	pTurn(330 * side);
-	pDrive(1200);
+	//turns claw towards ground
+	pTurn(208*side);//angle to shoot at mid flag
+
+	rotatorPID.target = rotatorLowPos;
+	liftPID.target = 575;//put lift on ground for claw to grab cap
+
+	pDrive(1000);
+	clawPID.target=850;
+	pDrive(500);
+	clawPID.target=50;
+	rotatorPID.target=rotatorHighPos
+
+	pTurn(475*side);
+	drive(127);
+	wait1msec(750);
+	drive(-50);
+	wait1Msec(50);
+	drive(0);
+	pDrive(-300);
+	pTurn(300*side);
+	liftPID.target=850;//lift up
+
+	drive(127);
+	wait1msec(1800);
+	drive(-50);
+	clawPID.target=850;
+	wait1Msec(50);
+	drive(0);
+
+
+	autonTime=time1[T1];
 }
 
 
 task autonomous()
 {
-	nearAuton2(-1);
+	farAuton(-1);
 }
 
 
@@ -329,7 +363,7 @@ task usercontrol()
 	rotatorPID.target=3850;
   while (true)
   {
-		if(vexRT[Btn7U]){
+		if(vexRT[Btn5d]){
 			//this is made for testing auton
 			//NEEDS TO BE COMMENTED OUT WHEN IN MATCHES
 			//nearAuton2(1);
