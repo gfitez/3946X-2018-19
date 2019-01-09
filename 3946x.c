@@ -137,14 +137,15 @@ task liftControl{
 	while(1){
 
 		if(vexRT[Btn6U]){
-			//liftPID.target+=0.4;
-			//if(liftPID.target>2300)liftPID.target=2300;
-			liftPID.target=1900;
+			if(SensorValue[rightLift]<2000-200)liftPID.target=2000;
+			else liftPID.target+=0.4;
 	}else if(vexRT[Btn5U]){
-			liftPID.target=1450;
-		}else if(vexRT[Btn6D]){
-			liftPID.target=550;
-			//liftPID.target-=0.4;
+			if(SensorValue[rightLift]<1500-200)liftPID.target=1500;
+			else liftPID.target+=0.4;
+
+
+		}else if(vexRT[Btn6D] && liftPID.target>650){
+			liftPID.target-=0.4;
 			//if(liftPID.target<640)liftPID.target=640;
 		}
 		lift(runPID(liftPID));
@@ -245,39 +246,24 @@ task clawTask(){
 			else runClawPID(clawPID);
 	}
 }
-void nearAuton(int side){
-	pDrive(-250);
-	//motor[claw] = 20;
-	startTask(liftControl);
-	liftPID.target = 850;
-	motor[slingshot]=127;
-	wait1Msec(3500);
-	motor[slingshot]=0;
-	pTurn(82 * side);
-	pDrive(-900);
-	pTurn(60 * side);
-	pDrive(2000);
-	pTurn(330 * side)
-	pDrive(1200)
-}
 int autonTime=0;
-void nearAuton2(int side){
+void nearAuton(int side){
 	clearTimer(T1);
 	startTask(rotatorTask);
 	startTask(liftControl);
 
 	liftPID.target = 850;
-	pDrive(-1050);//Drive back to hit flag
+	pDrive(-1100);//Drive back to hit flag
 	motor[slingshot]=127;
 	//turns claw towards ground
 	rotatorPID.target = rotatorLowPos;
-	pDrive(710);//drive back
+	pDrive(760);//drive back
 	pTurn(-75*side);//angle to shoot at mid flag
 	wait1Msec(800);
 	motor[slingshot]=0;
 	liftPID.target = 500;//put lift on ground for claw to grab cap
 	startTask(clawTask);
-	clawPID.target=850;
+	clawPID.target=800;
 	pTurn(410 * side);//turn to face cap
 	pDrive(650);
 	clawPID.target=50;//grap cap
@@ -285,11 +271,11 @@ void nearAuton2(int side){
 	rotatorPID.target=rotatorHighPos
 	liftPID.target=850;//lift up
 	pDrive(300);
-	clawPID.target=750;
+	clawPID.target=800;
 
-	pTurn(-350*side);//turn to face platform
+	pTurn(-380*side);//turn to face platform
 	drive(127);
-	wait1msec(1800);
+	wait1msec(1900);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
@@ -300,7 +286,7 @@ void nearAuton2(int side){
 }
 
 void farAuton(int side){
-//right is 1, left is -1
+//red is 1, blue is -1
 	clearTimer(T1);
 	rotatorPID.target=SensorValue[rotatorPot];
 	startTask(rotatorTask);
@@ -348,7 +334,7 @@ void farAuton(int side){
 
 task autonomous()
 {
-	farAuton(-1);
+	nearAuton(1);
 }
 
 
