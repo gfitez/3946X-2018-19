@@ -249,22 +249,29 @@ task clawTask(){
 int autonTime=0;
 void nearAuton(int side){
 	clearTimer(T1);
-	startTask(rotatorTask);
-	startTask(liftControl);
 
+	startTask(liftControl);
 	liftPID.target = 850;
-	pDrive(-1100);//Drive back to hit flag
 	motor[slingshot]=127;
-	//turns claw towards ground
-	rotatorPID.target = rotatorLowPos;
-	pDrive(760);//drive back
-	pTurn(-75*side);//angle to shoot at mid flag
-	wait1Msec(800);
+	wait1Msec(2000);
 	motor[slingshot]=0;
+
+
+	pDrive(-1100);//Drive back to hit flag
+
+	//turns claw towards ground
+
+	pDrive(700);//drive back
 	liftPID.target = 500;//put lift on ground for claw to grab cap
 	startTask(clawTask);
 	clawPID.target=800;
-	pTurn(410 * side);//turn to face cap
+	pTurn(350 * side);//turn to face cap
+
+
+	startTask(rotatorTask);
+	rotatorPID.target = rotatorLowPos;
+
+
 	pDrive(650);
 	clawPID.target=50;//grap cap
 
@@ -273,9 +280,9 @@ void nearAuton(int side){
 	pDrive(300);
 	clawPID.target=800;
 
-	pTurn(-380*side);//turn to face platform
+	pTurn(-330*side);//turn to face platform
 	drive(127);
-	wait1msec(1900);
+	wait1msec(2100);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
@@ -334,7 +341,8 @@ void farAuton(int side){
 
 task autonomous()
 {
-	nearAuton(1);
+	//1 for blue
+	nearAuton(-1);
 }
 
 
