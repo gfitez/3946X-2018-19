@@ -253,7 +253,7 @@ void nearAuton(int side){
 	startTask(liftControl);
 	liftPID.target = 850;
 	motor[slingshot]=127;
-	wait1Msec(2000);
+	wait1Msec(2300);
 	motor[slingshot]=0;
 
 
@@ -272,20 +272,26 @@ void nearAuton(int side){
 	rotatorPID.target = rotatorLowPos;
 
 
-	pDrive(650);
-	clawPID.target=50;//grap cap
+	pDrive(750);
+	clawPID.target=50;//grap capa
 
 	rotatorPID.target=rotatorHighPos
 	liftPID.target=850;//lift up
-	pDrive(300);
-	clawPID.target=800;
-
-	pTurn(-330*side);//turn to face platform
+	wait1Msec(600);
 	drive(127);
-	wait1msec(2100);
+	wait1Msec(100);
+	clawPID.target=800;
+	wait1msec(100);
+	drive(0);
+	wait1Msec(100);
+
+	pTurn(-350*side);//turn to face platform
+	drive(127);
+	wait1msec(2000);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
+
 
 
 	autonTime=time1[T1];
@@ -295,42 +301,27 @@ void nearAuton(int side){
 void farAuton(int side){
 //red is 1, blue is -1
 	clearTimer(T1);
-	rotatorPID.target=SensorValue[rotatorPot];
-	startTask(rotatorTask);
-	startTask(liftControl);
 	startTask(clawTask);
-
-	liftPID.target = 850;
-	motor[slingshot]=127;
-	pDrive(-300);//Drive back to hit flag
-	wait1Msec(2000);
-	motor[slingshot]=0;
-	//turns claw towards ground
-	pTurn(208*side);//angle to shoot at mid flag
-
-	rotatorPID.target = rotatorLowPos;
-	liftPID.target = 575;//put lift on ground for claw to grab cap
-
-	pDrive(1000);
-	clawPID.target=850;
-	pDrive(500);
-	clawPID.target=50;
-	rotatorPID.target=rotatorHighPos
-
-	pTurn(475*side);
-	drive(127);
-	wait1msec(750);
-	drive(-50);
-	wait1Msec(50);
-	drive(0);
-	pDrive(-300);
+	startTask(liftControl)
+	startTask(rotatorTask);
+	rotatorPID.target=rotatorLowPos;
+	liftPID.target=800;
+	wait1Msec(500);
+	liftPID.target = 500;//put lift on ground for claw to grab cap
+	clawPID.target=800;//open claw
+	pDrive(1400);//drive to cap
+	clawPID.target=50;//close claw on cap
 	pTurn(300*side);
-	liftPID.target=850;//lift up
+	pDrive(300);
+	pTurn(-1400*side);
+	clawPID.target=800;
+	pTurn(400*side);
+
+
 
 	drive(127);
-	wait1msec(1800);
+	wait1msec(2000);
 	drive(-50);
-	clawPID.target=850;
 	wait1Msec(50);
 	drive(0);
 
@@ -341,8 +332,8 @@ void farAuton(int side){
 
 task autonomous()
 {
-	//1 for blue
-	nearAuton(-1);
+	//-1 for blue
+	farAuton(1);
 }
 
 
