@@ -315,12 +315,12 @@ void farAuton(int side){
 	pDrive(300);
 	pTurn(-1400*side);
 	clawPID.target=800;
-	pTurn(400*side);
+	pTurn(300*side);
 
 
 
 	drive(127);
-	wait1msec(2000);
+	wait1msec(13000);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
