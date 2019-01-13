@@ -130,40 +130,44 @@ int runPID(PIDStruct PIDData){
 PIDStruct liftPID
 task liftControl{
 
+// Sets lift PID variables
 	liftPID.pGain=0.35;
 	liftPID.iGain=0;
 	liftPID.dGain=0;
 	liftPID.target=SensorValue[rightLift];
 	while(1){
 
+	// Controls height of lift from button presses
 		if(vexRT[Btn6U]){
 			if(SensorValue[rightLift]<2000-200)liftPID.target=2000;
 			else liftPID.target+=0.4;
 	}else if(vexRT[Btn5U]){
 			if(SensorValue[rightLift]<1500-200)liftPID.target=1500;
 			else liftPID.target+=0.4;
-
-
 		}else if(vexRT[Btn6D] && liftPID.target>650){
 			liftPID.target-=0.4;
 			//if(liftPID.target<640)liftPID.target=640;
 		}
 		lift(runPID(liftPID));
 
+// Updates lift positio in PID
 		liftPID.position=SensorValue[rightLift];
 
 	}
 }
+// Gets average of both drive quads
 int driveQuadAvg(){
 	return SensorValue[rightDriveQuad]/2+SensorValue[leftDriveQuad]/2;
 }
 int driveQuadDiff(){
 	return SensorValue[rightDriveQuad]/2-SensorValue[leftDriveQuad]/2;
 }
+// Stes drive quads to specied value
 void setDriveQuads(int n){
 	SensorValue[rightDriveQuad]=n;
 	SensorValue[leftDriveQuad]=n;
 }
+// Drive certain distace usinig PID
 PIDStruct drivePID;
 void pDrive(int distance){
 		setDriveQuads(0);
@@ -177,6 +181,7 @@ void pDrive(int distance){
 
 		int counter=0;
 
+// Loop through drive PID
 		while(counter<300){
 			if(abs(drivePID.target-drivePID.position)<80)counter++;
 			else counter=0;
@@ -184,11 +189,13 @@ void pDrive(int distance){
 			drive(runPID(drivePID));
 			wait1Msec(1);
 		}
+// Motor brake
 		drive(-sgn(distance)*10);
 		wait1Msec(50);
 		drive(0);
 
 }
+// Turn a specified distace using PID
 void pTurn(int distance){
 		setDriveQuads(0);
 
@@ -200,7 +207,7 @@ void pTurn(int distance){
 		drive(runPID(drivePID));
 
 		int counter=0;
-
+// PID loop
 		while(counter<300){
 			if(abs(drivePID.target-drivePID.position)<80)counter++;
 			else counter=0;
@@ -210,12 +217,13 @@ void pTurn(int distance){
 			runLeftDrive(-motorSpeed);
 			wait1Msec(1);
 		}
+// Motor brake
 		drive(-sgn(distance)*10);
 		wait1Msec(50);
 		drive(0);
 
 }
-
+// Run claw PID
 void runClawPID(PIDStruct clawPID){
 
 	clawPID.pGain=0.2;
@@ -225,7 +233,7 @@ void runClawPID(PIDStruct clawPID){
 	clawPID.position=SensorValue[clawPot];
 	motor[claw]=-runPID(clawPID);
 }
-
+// Run rotator PID
 void runRotatorPID(PIDStruct rotatorPID){
 
 	rotatorPID.pGain=0.1;
@@ -235,9 +243,11 @@ void runRotatorPID(PIDStruct rotatorPID){
 	rotatorPID.position=SensorValue[rotatorPot];
 	motor[rotator]=-runPID(rotatorPID);
 }
+// Task for rotator
 task rotatorTask(){
 		while(1)runRotatorPID(rotatorPID);
 }
+// Task for claw
 bool clawIdle=false;
 PIDStruct clawPID;
 task clawTask(){
@@ -246,6 +256,7 @@ task clawTask(){
 			else runClawPID(clawPID);
 	}
 }
+// Auton to run in square closest to flag
 int autonTime=0;
 void nearAuton(int side){
 	clearTimer(T1);
@@ -297,30 +308,45 @@ void nearAuton(int side){
 	autonTime=time1[T1];
 
 }
-
+// Auton to run in sqaure farthest to flag
 void farAuton(int side){
 //red is 1, blue is -1
 	clearTimer(T1);
+	rotatorPID.target=rotatorLowPos;
 	startTask(clawTask);
 	startTask(liftControl)
+
+	clawPID.target=50;
+	wait1Msec(500);
+
+	liftPID.target=950;
+	wait1Msec(500);
+
 	startTask(rotatorTask);
 	rotatorPID.target=rotatorLowPos;
-	liftPID.target=800;
-	wait1Msec(500);
-	liftPID.target = 500;//put lift on ground for claw to grab cap
-	clawPID.target=800;//open claw
-	pDrive(1400);//drive to cap
-	clawPID.target=50;//close claw on cap
-	pTurn(300*side);
-	pDrive(300);
-	pTurn(-1400*side);
-	clawPID.target=800;
-	pTurn(300*side);
+	liftPID.target = 450;//put lift on ground for claw to grab cap
+	drive(127);
+	wait1Msec(1225);
+	drive(0);
+	pDrive(-200);
+	clawPID.target=670;
+	pTurn(-220*side);//turn to face second cap
+	pDrive(520);
+
+
+	clawPID.target=50;//grab second cap
+	rotatorPID.target=rotatorHighPos//flip cap
+	liftPID.target=1000;//lift up
+	wait1Msec(600);
+	liftPID.target=500;
+	clawPID.target=800;//drop cap
+
+	pTurn(520*side);//turn to face platform
 
 
 
 	drive(127);
-	wait1msec(13000);
+	wait1msec(1750);
 	drive(-50);
 	wait1Msec(50);
 	drive(0);
@@ -333,7 +359,8 @@ void farAuton(int side){
 task autonomous()
 {
 	//-1 for blue
-	farAuton(1);
+	//1 for red
+ 	farAuton(-1);
 }
 
 
@@ -342,7 +369,7 @@ task usercontrol()
 {
 	startTask(liftControl);
 
-
+// Start subsystem tasks
 	startTask(rotatorTask);
 	startTask(clawTask);
 	rotatorPID.target=3850;
@@ -354,7 +381,7 @@ task usercontrol()
 			//nearAuton2(1);
 
 		}
-
+// Drive control
 		if( abs(vexRT[Ch1]) > 20 || abs(vexRT[Ch3]) > 20 ){
 			runLeftDrive(vexRT[Ch3]);
 			runRightDrive(vexRT[Ch2]);
@@ -362,7 +389,7 @@ task usercontrol()
 			drive(0);
 		}
 
-
+// Shooter control
 		if(vexRT[Btn8U]){
 			motor[slingshot] = 127;
 			liftPID.target=850;
@@ -370,6 +397,7 @@ task usercontrol()
 			motor[slingshot] = 0;
 		}
 
+// Intake control
 		if(vexRT[Btn7U]){
 			motor[intake] = 127;
 		}else if(vexRT[Btn7D]){
@@ -378,17 +406,19 @@ task usercontrol()
 			motor[intake] = 0;
 		}
 
-		if(vexRT[Btn8UXmtr2]){
+// Rotator control
+		if(vexRT[Btn8LXmtr2]){
 				liftPID.target=2300;
 				wait1Msec(500);
 				if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
 				else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
 		}
 
+// Claw control
   	if(vexRT[Btn7RXmtr2]){clawPID.target=850;clawIdle=false;}
   	else if(vexRT[Btn7LXmtr2]){ clawPID.target=50;clawIdle=false;}
-  	if(vexRT[Btn8LXmtr2])rotatorPID.target=rotatorHighPos;
-  	else if(vexRT[Btn8RXmtr2]) rotatorPID.target=rotatorLowPos;
+  	if(vexRT[Btn8UXmtr2])rotatorPID.target=rotatorHighPos;
+  	else if(vexRT[Btn8DXmtr2]) rotatorPID.target=rotatorLowPos;
 
 
   	if(vexRT[Btn7DXmtr2])clawIdle=true;
@@ -396,4 +426,6 @@ task usercontrol()
 
 
   }
-}
+
+
+  }
