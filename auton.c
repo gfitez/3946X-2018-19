@@ -1,24 +1,30 @@
+//This file contains specific autonomous routiens
+
 // Auton to run in square closest to flag
 int autonTime=0;
 void nearAuton(int side){
+	motor[intake]=127;
 	clearTimer(T1);
-
+	startTask(clawTask);
+	clawPID.target=clawClosePos;
 	startTask(liftControl);
 	liftPID.target = 850;
 	motor[slingshot]=127;
-	wait1Msec(2300);
+	wait1Msec(3000);
 	motor[slingshot]=0;
 
 
-	pDrive(-1100);//Drive back to hit flag
+	pDrive(-1300);//Drive back to hit flag
 
 	//turns claw towards ground
 
 	pDrive(700);//drive back
 	liftPID.target = 500;//put lift on ground for claw to grab cap
-	startTask(clawTask);
-	clawPID.target=800;
-	pTurn(350 * side);//turn to face cap
+	motor[intake]=0;
+
+
+	pTurn(900 * side);//turn to face cap
+	clawPID.target=clawOpenPos+200;
 
 
 	startTask(rotatorTask);
@@ -26,9 +32,9 @@ void nearAuton(int side){
 
 
 	pDrive(750);
-	clawPID.target=50;//grap capa
+	clawPID.target=clawClosePos;//grap capa
 
-	rotatorPID.target=rotatorHighPos
+	rotatorPID.target=rotatorHighPos;
 	liftPID.target=850;//lift up
 	wait1Msec(600);
 	drive(127);
@@ -38,7 +44,7 @@ void nearAuton(int side){
 	drive(0);
 	wait1Msec(100);
 
-	pTurn(-350*side);//turn to face platform
+	pTurn(-900*side);//turn to face platform
 	drive(127);
 	wait1msec(2000);
 	drive(-50);

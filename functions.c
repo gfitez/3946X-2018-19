@@ -1,23 +1,26 @@
+//This file contains the main functions used in driver and programming/autonomomous
+
+
+//runs the left side of the drive at a given speed
 void runLeftDrive(int speed){
 	motor[backLeftDrive] = speed;
 	motor[frontLeftDrive] = speed;
 }
+//runs the right side of the drive at a given speed
 void runRightDrive(int speed){
 	motor[backRightDrive] = speed;
 	motor[frontRightDrive] = speed;
 }
 
+//runs the drive at a given speed
 void drive(int speed){
 	runLeftDrive(speed);
 	runRightDrive(speed);
 }
 
-// Gets average of both drive quads
+// Gets average of both drive quads, useful when driving straight
 int driveQuadAvg(){
 	return SensorValue[rightDriveQuad]/2+SensorValue[leftDriveQuad]/2;
-}
-int driveQuadDiff(){
-	return SensorValue[rightDriveQuad]/2-SensorValue[leftDriveQuad]/2;
 }
 // Stes drive quads to specied value
 void setDriveQuads(int n){
@@ -25,12 +28,13 @@ void setDriveQuads(int n){
 	SensorValue[leftDriveQuad]=n;
 }
 
-
+//lift at a specified speed
 void lift(int speed){
 	motor[topLift]=speed;
-
 }
 
+
+//contains all the abstract variables for PID
 typedef struct{
 	float pGain;
 	float iGain;
@@ -47,7 +51,7 @@ typedef struct{
 } PIDStruct;
 
 //http://robotsforroboticists.com/pid-control/
-int runPID(PIDStruct PIDData){
+int getPIDSpeed(PIDStruct PIDData){
 	//Update variables
 	float timeInterval=PIDData.lastRan-nPgmTime;
 	PIDData.lastRan=nPgmTime;
@@ -72,8 +76,8 @@ int runPID(PIDStruct PIDData){
 }
 
 PIDStruct rotatorPID;
-int rotatorLowPos=15;
-int rotatorHighPos=2900;
+int rotatorLowPos=0;
+int rotatorHighPos=2690;
 
 
 task rotatorPIDTask{
@@ -95,24 +99,22 @@ PIDStruct liftPID
 task liftControl{
 
 // Sets lift PID variables
-	liftPID.pGain=0.35;
-	liftPID.iGain=0;
-	liftPID.dGain=0;
+
 	liftPID.target=SensorValue[rightLift];
 	while(1){
 
 	// Controls height of lift from button presses
 		if(vexRT[Btn6U]){
-			if(SensorValue[rightLift]<2000-200)liftPID.target=2000;
-			else liftPID.target+=0.4;
+			if(SensorValue[rightLift]<2000-200)liftPID.target=2050;
+			else liftPID.target+=0.1;
 	}else if(vexRT[Btn5U]){
 			if(SensorValue[rightLift]<1500-200)liftPID.target=1500;
-			else liftPID.target+=0.4;
+			else liftPID.target+=0.3;
 		}else if(vexRT[Btn6D] && liftPID.target>650){
-			liftPID.target-=0.4;
+			liftPID.target-=0.6;
 			//if(liftPID.target<640)liftPID.target=640;
 		}
-		lift(runPID(liftPID));
+		lift(getPIDSpeed(liftPID));
 
 // Updates lift positio in PID
 		liftPID.position=SensorValue[rightLift];
@@ -126,12 +128,10 @@ PIDStruct drivePID;
 void pDrive(int distance){
 		setDriveQuads(0);
 
-		drivePID.pGain=0.2;
-		drivePID.iGain=0;
-		drivePID.dGain=0;
+
 		drivePID.target=distance+driveQuadAvg();
 		drivePID.position=driveQuadAvg();
-		drive(runPID(drivePID));
+		drive(getPIDSpeed(drivePID));
 
 		int counter=0;
 
@@ -139,8 +139,7 @@ void pDrive(int distance){
 		while(counter<300){
 			if(abs(drivePID.target-drivePID.position)<80)counter++;
 			else counter=0;
-			drivePID.position=driveQuadAvg();
-			drive(runPID(drivePID));
+
 			wait1Msec(1);
 		}
 // Motor brake
@@ -157,62 +156,82 @@ void calibrateGyro(){
 	wait1Msec(2000);
 }
 
+float gyroValue(){
+	return 	SensorValue[gyro]*1.32;
+}
 
 // Turn a specified distace using PID
 
 PIDStruct gyroPID;
 void pTurn(int degrees){
 		SensorValue[gyro]=0;
-		gyroPID.pGain=0.4;
-		gyroPID.iGain=0;
-		gyroPID.dGain=0;
+
 		gyroPID.target=degrees;
-		gyroPID.position=SensorValue[gyro];
-		drive(runPID(gyroPID));
+		gyroPID.position=gyroValue();
+		drive(getPIDSpeed(gyroPID));
 
 		int counter=0;
 	// PID loop
 		while(counter<300){//loop until the robot has been in range for 300 msecs
 			if(abs(gyroPID.target-gyroPID.position)<80)counter++;//add another millisecond when the robot is in range
 			else counter=0;
-			gyroPID.position=SensorValue[gyro];
-			int motorSpeed=runPID(gyroPID);
+			gyroPID.position=gyroValue();
+			int motorSpeed=getPidSpeeD(gyroPID);
 			runRightDrive(motorSpeed);
 			runLeftDrive(-motorSpeed);
 			wait1Msec(1);
 		}
 
 }
+
+
+
+
 // Run claw PID
+PIDStruct clawPID;
+
 void runClawPID(PIDStruct clawPID){
 
-	clawPID.pGain=0.2;
-	clawPID.iGain=0;
-	clawPID.dGain=0;
+
 
 	clawPID.position=SensorValue[clawPot];
-	motor[claw]=-runPID(clawPID);
+	motor[claw]=-getPidSpeed(clawPID);
 }
-// Run rotator PID
-void runRotatorPID(PIDStruct rotatorPID){
 
-	rotatorPID.pGain=0.1;
-	rotatorPID.iGain=0;
-	rotatorPID.dGain=0;
 
-	rotatorPID.position=SensorValue[rotatorPot];
-	motor[rotator]=-runPID(rotatorPID);
-}
+
+
+
+
 // Task for rotator
 task rotatorTask(){
-		while(1)runRotatorPID(rotatorPID);
+
+		while(1){
+			rotatorPID.position=SensorValue[rotatorPot];
+			motor[rotator]=-getPIDSpeed(rotatorPID);
+		}
 }
 // Task for claw
 bool clawIdle=false;
-PIDStruct clawPID;
+
 task clawTask(){
 	while(1){
 		if(clawIdle)motor[claw]=0;
 			else runClawPID(clawPID);
+	}
+}
+
+bool lockDrive=false;
+task driveLocker(){
+	while(1){
+		if(lockDrive){
+			drivePID.position=driveQuadAvg();
+			drive(getPIDSpeed(drivePID)*2);
+		}else{
+			setDriveQuads(0);
+			drivePID.target=driveQuadAvg();
+		}
+
+
 	}
 }
