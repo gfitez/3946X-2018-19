@@ -106,7 +106,7 @@ task liftControl{
 	// Controls height of lift from button presses
 		if(vexRT[Btn6U]){
 			if(SensorValue[rightLift]<2000-200)liftPID.target=2050;
-			else liftPID.target+=0.1;
+			else liftPID.target+=0.3;
 	}else if(vexRT[Btn5U]){
 			if(SensorValue[rightLift]<1500-200)liftPID.target=1500;
 			else liftPID.target+=0.3;
@@ -128,7 +128,6 @@ PIDStruct drivePID;
 void pDrive(int distance){
 		setDriveQuads(0);
 
-
 		drivePID.target=distance+driveQuadAvg();
 		drivePID.position=driveQuadAvg();
 		drive(getPIDSpeed(drivePID));
@@ -139,6 +138,8 @@ void pDrive(int distance){
 		while(counter<300){
 			if(abs(drivePID.target-drivePID.position)<80)counter++;
 			else counter=0;
+			drivePID.position=driveQuadAvg();
+			drive(getPIDSpeed(drivePID));
 
 			wait1Msec(1);
 		}
@@ -226,7 +227,7 @@ task driveLocker(){
 	while(1){
 		if(lockDrive){
 			drivePID.position=driveQuadAvg();
-			drive(getPIDSpeed(drivePID)*2);
+			drive(getPIDSpeed(drivePID)*1.5);
 		}else{
 			setDriveQuads(0);
 			drivePID.target=driveQuadAvg();

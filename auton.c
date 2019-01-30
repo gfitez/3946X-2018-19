@@ -4,27 +4,29 @@
 int autonTime=0;
 void nearAuton(int side){
 	motor[intake]=127;
+	motor[slingshot]=127;
+	pDrive(-450);
 	clearTimer(T1);
 	startTask(clawTask);
 	clawPID.target=clawClosePos;
 	startTask(liftControl);
 	liftPID.target = 850;
-	motor[slingshot]=127;
-	wait1Msec(3000);
+
+	wait1Msec(2000);
 	motor[slingshot]=0;
 
 
-	pDrive(-1300);//Drive back to hit flag
+	pDrive(-600);//Drive back to hit flag
 
 	//turns claw towards ground
 
-	pDrive(700);//drive back
+	pDrive(600);//drive back
 	liftPID.target = 500;//put lift on ground for claw to grab cap
 	motor[intake]=0;
 
 
 	pTurn(900 * side);//turn to face cap
-	clawPID.target=clawOpenPos+200;
+	clawPID.target=clawOpenPos+100;
 
 
 	startTask(rotatorTask);
@@ -38,13 +40,15 @@ void nearAuton(int side){
 	liftPID.target=850;//lift up
 	wait1Msec(600);
 	drive(127);
-	wait1Msec(100);
 	clawPID.target=800;
-	wait1msec(100);
+	wait1msec(200);
 	drive(0);
-	wait1Msec(100);
+
+	//pDrive(-0);//Drive back to align with platform
+
 
 	pTurn(-900*side);//turn to face platform
+	clawPID.target=clawClosePos;
 	drive(127);
 	wait1msec(2000);
 	drive(-50);

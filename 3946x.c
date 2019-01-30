@@ -31,8 +31,8 @@ const int driveThreshold=20;
 
 const int liftLowPos=850;
 
-const int clawOpenPos=2200;
-const int clawClosePos=2850;
+const int clawOpenPos=1750;
+const int clawClosePos=2450;
 
 
 
@@ -51,7 +51,7 @@ void pre_auton()
 	drivePID.iGain=0;
 	drivePID.dGain=0;
 
-	liftPID.pGain=0.25;
+	liftPID.pGain=0.375;
 	liftPID.iGain=0;
 	liftPID.dGain=0;
 
@@ -72,7 +72,7 @@ void pre_auton()
 
 task autonomous()
 {
- 	nearAuton(BLUESIDE);
+ 	nearAuton(RedSIDE);
 }
 
 //Moves the lift to a height to not block the lifte
@@ -121,7 +121,7 @@ task usercontrol()
 
 // Rotator control
 		if(vexRT[Btn8LXmtr2]){
-				liftPID.target=2300;
+				liftPID.target+=500;
 				wait1Msec(500);
 				if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
 				else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
