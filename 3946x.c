@@ -24,15 +24,15 @@
 const int REDSIDE=1;
 const int BLUESIDE=-1;
 
-const int liftOutOfTheWayHeight=850;
+const int liftOutOfTheWayHeight=900;
 
 const int fullPower=127;
-const int driveThreshold=20;
+const int driveThreshold=10;
 
 const int liftLowPos=850;
 
 const int clawOpenPos=1750;
-const int clawClosePos=2450;
+const int clawClosePos=2300;
 
 
 
@@ -51,7 +51,7 @@ void pre_auton()
 	drivePID.iGain=0;
 	drivePID.dGain=0;
 
-	liftPID.pGain=0.375;
+	liftPID.pGain=0.125;
 	liftPID.iGain=0;
 	liftPID.dGain=0;
 
@@ -63,7 +63,7 @@ void pre_auton()
 	clawPID.iGain=0;
 	clawPID.dGain=0;
 
-	rotatorPID.pGain=0.1;
+	rotatorPID.pGain=0.2;
 	rotatorPID.iGain=0;
 	rotatorPID.dGain=0;
 }
@@ -72,7 +72,7 @@ void pre_auton()
 
 task autonomous()
 {
- 	nearAuton(RedSIDE);
+ 	nearAuton(BLUESIDE)
 }
 
 //Moves the lift to a height to not block the lifte
@@ -88,7 +88,7 @@ task usercontrol()
 	startTask(rotatorTask);
 	startTask(clawTask);
 	startTask(driveLocker);
-	rotatorPID.target=rotatorHighPos;
+	rotatorPID.target=rotatorLowPos;
 	clawPID.target=clawClosePos;
   while (true)
   {

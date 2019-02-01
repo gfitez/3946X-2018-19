@@ -76,8 +76,8 @@ int getPIDSpeed(PIDStruct PIDData){
 }
 
 PIDStruct rotatorPID;
-int rotatorLowPos=0;
-int rotatorHighPos=2690;
+int rotatorLowPos=550;
+int rotatorHighPos=3730;
 
 
 task rotatorPIDTask{
@@ -102,19 +102,27 @@ task liftControl{
 
 	liftPID.target=SensorValue[rightLift];
 	while(1){
-
+		bool runPID=True;
 	// Controls height of lift from button presses
 		if(vexRT[Btn6U]){
-			if(SensorValue[rightLift]<2000-200)liftPID.target=2050;
-			else liftPID.target+=0.3;
+			if(SensorValue[rightLift]<2100-200)liftPID.target=2100;
+			else{
+				liftPID.target=SensorValue[rightLift];
+				lift(127);
+				runPID=false;
+			}
 	}else if(vexRT[Btn5U]){
-			if(SensorValue[rightLift]<1500-200)liftPID.target=1500;
-			else liftPID.target+=0.3;
+			if(SensorValue[rightLift]<1520-200)liftPID.target=1520;
+			else{
+				liftPID.target=SensorValue[rightLift];
+				lift(127);
+				runPID=false;
+			}
 		}else if(vexRT[Btn6D] && liftPID.target>650){
-			liftPID.target-=0.6;
+			liftPID.target-=1.5;
 			//if(liftPID.target<640)liftPID.target=640;
 		}
-		lift(getPIDSpeed(liftPID));
+		if(runPID)lift(getPIDSpeed(liftPID));
 
 // Updates lift positio in PID
 		liftPID.position=SensorValue[rightLift];
@@ -173,7 +181,7 @@ void pTurn(int degrees){
 
 		int counter=0;
 	// PID loop
-		while(counter<300){//loop until the robot has been in range for 300 msecs
+		while(counter<150){//loop until the robot has been in range for 300 msecs
 			if(abs(gyroPID.target-gyroPID.position)<80)counter++;//add another millisecond when the robot is in range
 			else counter=0;
 			gyroPID.position=gyroValue();
