@@ -208,7 +208,12 @@ void runClawPID(PIDStruct clawPID){
 }
 
 
-
+//LCD set up code
+void waitForRelease()
+{
+	while(nLCDButtons != 0){}
+	wait1Msec(5);
+}
 
 
 
