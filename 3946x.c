@@ -55,7 +55,7 @@ const short rightButton = 4;
 void pre_auton(){
 	datalogClear();
 	displayNextLCDString("Gyro Calibrating");
-	cali();//calibrate gyro
+	calibrateGyro();
 	bStopTasksBetweenModes = true;
 	bLCDBacklight = true;
 	while(bIfiRobotDisabled){
@@ -109,11 +109,14 @@ void pre_auton(){
 
 task autonomous(){
 	bLCDBacklight = false;
+	/**
 	if(autonIndex==1)prog();
 	else if(autonIndex==2)nearAuton(REDSIDE);
 	else if(autonIndex==3)nearAuton(BLUESIDE);
 	else if(autonIndex==4)farAuton(REDSIDE);
 	else if(autonIndex==5)farAuton(BLUESIDE);
+	**/
+	farAuton(REDSIDE);
 
 }
 

@@ -112,7 +112,7 @@ task liftControl{
 				runPID=false;
 			}
 	}else if(vexRT[Btn5U]){
-			if(SensorValue[rightLift]<1520-200)liftPID.target=1520;
+			if(SensorValue[rightLift]<1600-200)liftPID.target=1600;
 			else{
 				liftPID.target=SensorValue[rightLift];
 				lift(127);
