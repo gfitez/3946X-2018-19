@@ -53,7 +53,7 @@ typedef struct{
 //http://robotsforroboticists.com/pid-control/
 int getPIDSpeed(PIDStruct PIDData){
 	//Update variables
-	float timeInterval=PIDData.lastRan-nPgmTime;
+	float timeInterval=(nPgmTime+0.001)-PIDData.lastRan;
 	PIDData.lastRan=nPgmTime;
 	float error=PIDData.target-PIDData.position;
 
@@ -61,8 +61,10 @@ int getPIDSpeed(PIDStruct PIDData){
 	int pTerm=PIDData.pGain*error;
 
 	//Run integral control
-	PIDData.iState+=error*timeInterval;
+
+	PIDData.iState+=error;
 	int iTerm=PIDData.iGain*PIDData.iState;
+	//if(sgn(PIDData.iState)!=sgn(error))PIDData.iState=0;
 	if(PIDData.iState>PIDData.iMax)PIDData.iState=PIDData.iMax;
 	if(PIDData.iState<PIDData.iMin)PIDData.iState=PIDData.iMin;
 
@@ -104,15 +106,15 @@ task liftControl{
 	while(1){
 		bool runPID=True;
 	// Controls height of lift from button presses
-		if(vexRT[Btn6U]){
-			if(SensorValue[rightLift]<2100-200)liftPID.target=2100;
+		if(vexRT[Btn8U]){
+			if(SensorValue[rightLift]<1900-200)liftPID.target=1900;
 			else{
 				liftPID.target=SensorValue[rightLift];
 				lift(127);
 				runPID=false;
 			}
-	}else if(vexRT[Btn5U]){
-			if(SensorValue[rightLift]<1600-200)liftPID.target=1600;
+	}else if(vexRT[Btn7U]){
+			if(SensorValue[rightLift]<1400-200)liftPID.target=1400;
 			else{
 				liftPID.target=SensorValue[rightLift];
 				lift(127);
@@ -185,7 +187,7 @@ void pTurn(int degrees){
 			if(abs(gyroPID.target-gyroPID.position)<80)counter++;//add another millisecond when the robot is in range
 			else counter=0;
 			gyroPID.position=gyroValue();
-			int motorSpeed=getPidSpeeD(gyroPID);
+			int motorSpeed=getPidSpeed(gyroPID);
 			runRightDrive(motorSpeed);
 			runLeftDrive(-motorSpeed);
 			wait1Msec(1);

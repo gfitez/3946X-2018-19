@@ -5,6 +5,7 @@
 #pragma config(Sensor, in3,    rotatorPot,     sensorPotentiometer)
 #pragma config(Sensor, in4,    clawPot,        sensorPotentiometer)
 #pragma config(Sensor, in5,    gyro,           sensorGyro)
+#pragma config(Sensor, dgtl8,  shooterLimit,   sensorDigitalIn)
 #pragma config(Sensor, dgtl9,  leftDriveQuad,  sensorQuadEncoder)
 #pragma config(Sensor, dgtl11, rightDriveQuad, sensorQuadEncoder)
 #pragma config(Motor,  port2,           topLift,       tmotorVex393_MC29, openLoop)
@@ -26,7 +27,7 @@
 const int REDSIDE=1;
 const int BLUESIDE=-1;
 
-const int liftOutOfTheWayHeight=900;
+const int liftOutOfTheWayHeight=815;
 
 const int fullPower=127;
 const int driveThreshold=10;
@@ -34,7 +35,7 @@ const int driveThreshold=10;
 const int liftLowPos=850;
 
 const int clawOpenPos=1750;
-const int clawClosePos=2300;
+const int clawClosePos=2200;
 
 
 
@@ -91,8 +92,10 @@ void pre_auton(){
 		drivePID.dGain=0;
 
 		liftPID.pGain=0.125;
-		liftPID.iGain=0;
+		liftPID.iGain=0.0001;
 		liftPID.dGain=0;
+		liftPID.iMin=-200000;
+		liftPID.iMax=200000;
 
 		gyroPID.pGain=0.25;
 		gyroPID.iGain=0.0;
@@ -116,6 +119,7 @@ task autonomous(){
 	else if(autonIndex==4)farAuton(REDSIDE);
 	else if(autonIndex==5)farAuton(BLUESIDE);
 	**/
+	//prog();
 	farAuton(REDSIDE);
 
 }
@@ -140,6 +144,13 @@ task usercontrol()
 	clawPID.target=clawClosePos;
   while (true)
   {
+
+  	if(vexRT[btn7d]){
+  		//stopAllTasks()
+  		//farAuton(REDSIDE)
+			//pTurn(900);
+  	}
+
 // Drive control
 		if( abs(vexRT[Ch1]) > driveThreshold || abs(vexRT[Ch3]) > driveThreshold ){
 			lockDrive=false;
@@ -150,18 +161,20 @@ task usercontrol()
 		}
 
 // Shooter control
-		if(vexRT[Btn8U]){
+		if(vexRT[Btn6u]){
 			motor[slingshot] = fullPower;
 			getLiftOutOfTheWay()
-		}else{
+		}/**else if(SensorValue[shooterLimit]==1){
+			motor[slingshot]=50;
+		}**/else{
 			motor[slingshot] = 0;
 		}
 
 // Intake control
-		if(vexRT[Btn7U]){
+		if(vexRT[Btn5UXmtr2] || vexRT[btn5u]){
 			motor[intake] = fullPower;
 			getLiftOutOfTheWay();
-		}else if(vexRT[Btn7D]){
+		}else if(vexRT[Btn5d] || vexRT[Btn5DXmtr2]){
 			motor[intake] = -fullPower;
 		}else{
 			motor[intake] = 0;
