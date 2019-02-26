@@ -39,6 +39,8 @@ typedef struct{
 	float pGain;
 	float iGain;
 	float dGain;
+	float constant;
+
 	float iMin;
 	float iMax;
 	float iState;
@@ -46,35 +48,41 @@ typedef struct{
 	float position;
 	float target;
 
+	int timeDuration;
 	int lastRan;
 	float prevError;
+	int currSpeed;
 } PIDStruct;
 
 //http://robotsforroboticists.com/pid-control/
 int getPIDSpeed(PIDStruct PIDData){
-	//Update variables
-	float timeInterval=(nPgmTime+0.001)-PIDData.lastRan;
-	PIDData.lastRan=nPgmTime;
-	float error=PIDData.target-PIDData.position;
+	//Only run if specified duration has elapsed
+	if(nPgmTime-PIDData.lastRan>PIDData.timeDuration){
 
-	//Run proportional control
-	int pTerm=PIDData.pGain*error;
+		float timeInterval=(nPgmTime+0.001)-PIDData.lastRan;
+		PIDData.lastRan=nPgmTime;
+		float error=PIDData.target-PIDData.position;
 
-	//Run integral control
+		//Run proportional control
+		int pTerm=PIDData.pGain*error;
 
-	PIDData.iState+=error;
-	int iTerm=PIDData.iGain*PIDData.iState;
-	//if(sgn(PIDData.iState)!=sgn(error))PIDData.iState=0;
-	if(PIDData.iState>PIDData.iMax)PIDData.iState=PIDData.iMax;
-	if(PIDData.iState<PIDData.iMin)PIDData.iState=PIDData.iMin;
+		//Run integral control
 
-	//Run derivative control
-	int dTerm=PIDData.dGain*(error-PIDData.prevError)/(timeInterval+0.001);
+		PIDData.iState+=error;
+		int iTerm=PIDData.iGain*PIDData.iState;
+		//if(sgn(PIDData.iState)!=sgn(error))PIDData.iState=0;
+		if(PIDData.iState>PIDData.iMax)PIDData.iState=PIDData.iMax;
+		if(PIDData.iState<PIDData.iMin)PIDData.iState=PIDData.iMin;
 
-	//Update variables for next run
-	PIDData.prevError=error;
+		//Run derivative control
+		int dTerm=PIDData.dGain*(error-PIDData.prevError)/(timeInterval+0.001);
 
-	return pTerm+iTerm+dTerm
+		//Update variables for next run
+		PIDData.prevError=error;
+
+		PIDData.currSpeed=pTerm+iTerm+dTerm+PIDData.constant;
+	}
+	return PIDData.currSpeed;
 }
 
 PIDStruct rotatorPID;
@@ -107,14 +115,14 @@ task liftControl{
 		bool runPID=True;
 	// Controls height of lift from button presses
 		if(vexRT[Btn8U]){
-			if(SensorValue[rightLift]<1900-200)liftPID.target=1900;
+			if(SensorValue[rightLift]<2025-200)liftPID.target=2025;
 			else{
 				liftPID.target=SensorValue[rightLift];
 				lift(127);
 				runPID=false;
 			}
 	}else if(vexRT[Btn7U]){
-			if(SensorValue[rightLift]<1400-200)liftPID.target=1400;
+			if(SensorValue[rightLift]<1525-200)liftPID.target=1525;
 			else{
 				liftPID.target=SensorValue[rightLift];
 				lift(127);
@@ -174,10 +182,10 @@ float gyroValue(){
 // Turn a specified distace using PID
 
 PIDStruct gyroPID;
-void pTurn(int degrees){
-		SensorValue[gyro]=0;
+void pTurn(int degrees, bool resetValue=true){
+	if(resetValue)SensorValue[gyro]=0;
 
-		gyroPID.target=degrees;
+		gyroPID.target=gyroValue()+degrees;
 		gyroPID.position=gyroValue();
 		drive(getPIDSpeed(gyroPID));
 
@@ -247,7 +255,5 @@ task driveLocker(){
 			setDriveQuads(0);
 			drivePID.target=driveQuadAvg();
 		}
-
-
 	}
 }

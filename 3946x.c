@@ -27,7 +27,7 @@
 const int REDSIDE=1;
 const int BLUESIDE=-1;
 
-const int liftOutOfTheWayHeight=815;
+const int liftOutOfTheWayHeight=700;
 
 const int fullPower=127;
 const int driveThreshold=10;
@@ -35,7 +35,7 @@ const int driveThreshold=10;
 const int liftLowPos=850;
 
 const int clawOpenPos=1750;
-const int clawClosePos=2200;
+const int clawClosePos=2300;
 
 
 
@@ -44,7 +44,7 @@ const int clawClosePos=2200;
 #include "auton.c"
 
 //LCD code variables
-int autonIndex=0;
+int autonIndex=4;
 string mainBattery;
 const int numAutons=6;
 string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFar", "blueFar"};
@@ -87,15 +87,23 @@ void pre_auton(){
 		}
 		displayLCDCenteredString(1,"Calibrating...")
 
-		drivePID.pGain=0.2;
+		drivePID.pGain=0.25;
 		drivePID.iGain=0;
 		drivePID.dGain=0;
 
-		liftPID.pGain=0.125;
-		liftPID.iGain=0.0001;
-		liftPID.dGain=0;
+		/**liftPID.pGain=0.15;
+		liftPID.iGain=0.0002;
+		liftPID.dGain=0.01;
+		liftPID.iMin=-20000;
+		liftPID.iMax=20000;
+		liftPID.constant=4;**/
+		liftPID.pGain=0.15;
+		liftPID.iGain=0.0;
+		liftPID.dGain=0.1;
 		liftPID.iMin=-200000;
 		liftPID.iMax=200000;
+		liftPID.constant=4;
+		liftPID.timeDuration=10;
 
 		gyroPID.pGain=0.25;
 		gyroPID.iGain=0.0;
@@ -112,15 +120,15 @@ void pre_auton(){
 
 task autonomous(){
 	bLCDBacklight = false;
-	/**
+
 	if(autonIndex==1)prog();
 	else if(autonIndex==2)nearAuton(REDSIDE);
 	else if(autonIndex==3)nearAuton(BLUESIDE);
 	else if(autonIndex==4)farAuton(REDSIDE);
 	else if(autonIndex==5)farAuton(BLUESIDE);
-	**/
+
 	//prog();
-	farAuton(REDSIDE);
+	//farAuton(REDSIDE);
 
 }
 
@@ -136,6 +144,9 @@ void getLiftOutOfTheWay(){
 task usercontrol()
 {
 // Start subsystem tasks
+	//farAuton(REDSIDE);
+	//while(1){}
+
 	startTask(liftControl);
 	startTask(rotatorTask);
 	startTask(clawTask);
@@ -144,6 +155,9 @@ task usercontrol()
 	clawPID.target=clawClosePos;
   while (true)
   {
+  	displayLCDString(0, 0, "Primary: ");
+		sprintf(mainBattery, "%1.2f%c", nImmediateBatteryLevel/1000.0,'V');
+		displayNextLCDString(mainBattery);
 
   	if(vexRT[btn7d]){
   		//stopAllTasks()
@@ -181,16 +195,25 @@ task usercontrol()
 		}
 
 // Rotator control
-		if(vexRT[Btn8LXmtr2]){
+		if(vexRT[Btn8LXmtr2] || vexRT[btn8l]){
 				liftPID.target+=500;
 				wait1Msec(500);
 				if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
 				else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
 		}
+		if(vexRT[Btn8RXmtr2] || vexRT[btn8r]){
+			clawPID.target=clawClosePos;
+			liftPID.target+=300;
+			if(rotatorPID.target==rotatorLowPos)rotatorPID.target=rotatorHighPos;
+			else if(rotatorPID.target==rotatorHighPos)rotatorPID.target=rotatorLowPos;
+			wait1Msec(500);
+			liftPID.target-=300;
+			clawPID.target=clawOpenPos;
+		}
 
 // Claw control
-  	if(vexRT[Btn7RXmtr2]){clawPID.target=clawOpenPos;clawIdle=false;}
-  	else if(vexRT[Btn7LXmtr2]){
+  	if(vexRT[Btn7RXmtr2] || vexRT[btn7r]){clawPID.target=clawOpenPos;clawIdle=false;}
+  	else if(vexRT[Btn7LXmtr2] || vexRT[btn7l]){
   		//open the claw less when the rotator is in the low position
   		if(rotatorPID.target<200)clawPID.target=clawClosePos-200;
   		else clawPID.target=clawClosePos;
@@ -205,6 +228,10 @@ task usercontrol()
 
   	if(vexRT[Btn7DXmtr2])clawIdle=true;
 
+
+  	if(vexRT[btn8d])motor[port1]=-127;
+  	else motor[port1]=0;
   }
+
 
   }
