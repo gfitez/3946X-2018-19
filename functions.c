@@ -145,6 +145,8 @@ task liftControl{
 PIDStruct drivePID;
 void pDrive(int distance){
 		setDriveQuads(0);
+		SensorValue[leftDriveQuad]=0;
+		SensorValue[rightDriveQuad]=0;
 
 		drivePID.target=distance+driveQuadAvg();
 		drivePID.position=driveQuadAvg();
@@ -153,7 +155,7 @@ void pDrive(int distance){
 		int counter=0;
 
 // Loop through drive PID
-		while(counter<300){
+		while(counter<200){
 			if(abs(drivePID.target-drivePID.position)<80)counter++;
 			else counter=0;
 			drivePID.position=driveQuadAvg();

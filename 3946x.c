@@ -175,7 +175,7 @@ task usercontrol()
 		}
 
 // Shooter control
-		if(vexRT[Btn6u]){
+		if(vexRT[Btn6u] || vexRT[Btn8DXmtr2]){
 			motor[slingshot] = fullPower;
 			getLiftOutOfTheWay()
 		}/**else if(SensorValue[shooterLimit]==1){

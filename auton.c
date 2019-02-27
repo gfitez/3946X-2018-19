@@ -69,7 +69,11 @@ void farAuton(int side){
 //red is 1, blue is -1
 	clearTimer(T1);
 
-
+	motor[slingshot] = 127;
+	pTurn(580 * side);
+	wait1Msec(300);
+	motor[slingshot] = 0;
+	pTurn(-580 * side);
 	clawIdle = false;
 	startTask(clawTask);
 	startTask(liftControl);
@@ -77,11 +81,11 @@ void farAuton(int side){
 	startTask(rotatorTask);
 	rotatorPID.target=rotatorLowPos;
 	motor[intake] = 127;
-	pDrive(-940);//back up to get first ball
+	pDrive(-900);//back up to get first ball
 	motor[intake]=0;
 	liftPID.target=550;//lower lift
-	pDrive(-300);
-	pDrive(240);
+	//pDrive(-270);
+	pDrive(130);
 	pTurn(1000);
 	pDrive(400);
 	clawPID.target=clawClosePos;//grab cap
@@ -89,10 +93,12 @@ void farAuton(int side){
 	rotatorPID.target=rotatorHighPos;//flip cap
 	wait1Msec(500);
 	liftPID.target-=300;
+	motor[intake] = 127;
 	clawPID.target=clawOpenPos;
 	getLiftOutOfTheWay();
 	liftPID.target+=100;
-	pDrive(-600);//back up to align on bar
+	pDrive(-550);//back up to align on bar
+	motor[intake]=0;
 	drive(-50);
 	wait1Msec(300);
 	pDrive(150);
