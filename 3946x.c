@@ -27,7 +27,7 @@
 const int REDSIDE=1;
 const int BLUESIDE=-1;
 
-const int liftOutOfTheWayHeight=700;
+const int liftOutOfTheWayHeight=800;
 
 const int fullPower=127;
 const int driveThreshold=10;
@@ -44,10 +44,10 @@ const int clawClosePos=2300;
 #include "auton.c"
 
 //LCD code variables
-int autonIndex=4;
+int autonIndex=1;
 string mainBattery;
-const int numAutons=6;
-string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFar", "blueFar"};
+const int numAutons=8;
+string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFarShoot", "blueFarShoot", "redFarPark", "blueFarPark"};
 const short leftButton = 1;
 const short rightButton = 4;
 
@@ -124,8 +124,10 @@ task autonomous(){
 	if(autonIndex==1)prog();
 	else if(autonIndex==2)nearAuton(REDSIDE);
 	else if(autonIndex==3)nearAuton(BLUESIDE);
-	else if(autonIndex==4)farAuton(REDSIDE);
-	else if(autonIndex==5)farAuton(BLUESIDE);
+	else if(autonIndex==4)farAutonShoot(REDSIDE);
+	else if(autonIndex==5)farAutonShoot(BLUESIDE);
+	else if(autonIndex==6)farAutonPark(REDSIDE);
+	else if(autonIndex==7)farAutonPark(BLUESIDE);
 
 	//prog();
 	//farAuton(REDSIDE);

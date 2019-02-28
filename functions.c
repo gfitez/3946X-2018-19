@@ -187,7 +187,7 @@ PIDStruct gyroPID;
 void pTurn(int degrees, bool resetValue=true){
 	if(resetValue)SensorValue[gyro]=0;
 
-		gyroPID.target=gyroValue()+degrees;
+		gyroPID.target=degrees;
 		gyroPID.position=gyroValue();
 		drive(getPIDSpeed(gyroPID));
 
@@ -202,6 +202,7 @@ void pTurn(int degrees, bool resetValue=true){
 			runLeftDrive(-motorSpeed);
 			wait1Msec(1);
 		}
+		SensorValue[gyro]=false;
 
 }
 
