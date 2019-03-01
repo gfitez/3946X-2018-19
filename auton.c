@@ -2,7 +2,6 @@
 
 // Auton to run in square closest to flag
 int autonTime=0;
-
 void nearAutonFirstHalf(int side, bool flipCap){
 	startTask(clawTask);
 	clawPID.target=clawClosePos;
@@ -10,7 +9,7 @@ void nearAutonFirstHalf(int side, bool flipCap){
 
 	motor[intake]=127;
 	if(flipCap) pDrive(-1100);//back up to get first ball
-	else pDrive(-960);
+	else pDrive(-940);
 	motor[intake]=0;
 	if(flipCap) pDrive(1180);
 	else pDrive(940);
@@ -50,16 +49,16 @@ void nearAuton(int side){
 
 void prog(){
 	clearTimer(T1);
-	nearAutonFirstHalf(BLUESIDE, true);
+	nearAutonFirstHalf(REDSIDE, true);
 	SensorValue[gyro]=0;
 	pDrive(-600);//hit bottom flag
 	pDrive(700);
 	clawPID.target=clawOpenPos;
-	pTurn(-900,false);
+	pTurn(900,false);
 	pDrive(470);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(200);
-	pTurn(900,false);
+	pTurn(-900,false);
 	pDrive(300);
 	liftPID.target+=300;
 	startTask(rotatorTask);
@@ -70,16 +69,16 @@ void prog(){
 	pDrive(-300);
 	clawPID.target=clawClosePos;
 	clawIdle = true;
-	pTurn(-900,false);
-	pDrive(670);
 	pTurn(900,false);
+	pDrive(670);
+	pTurn(-900,false);
 	drive(-127);
 	wait1Msec(1000);
 	drive(0);
 	motor[intake]=127;
 	pDrive(750);
 	motor[slingshot]=127;
-	pTurn(150);
+	pTurn(-150);
 	wait1Msec(300);
 	motor[slingshot]=0;
 
