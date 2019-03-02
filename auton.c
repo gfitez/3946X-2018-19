@@ -9,10 +9,10 @@ void nearAutonFirstHalf(int side, bool flipCap){
 
 	motor[intake]=127;
 	if(flipCap) pDrive(-1100);//back up to get first ball
-	else pDrive(-940);
+	else pDrive(-920);
 	motor[intake]=0;
-	if(flipCap) pDrive(1180);
-	else pDrive(940);
+	if(flipCap) pDrive(1080);
+	else pDrive(900);
 
 	SensorValue[gyro]=0;
 	motor[slingshot]=127;
@@ -24,7 +24,8 @@ void nearAutonFirstHalf(int side, bool flipCap){
 	pDrive(-600);//align with second flag
 	wait1Msec(150);//shoot second fllag
 	motor[slingshot]=0;
-	pTurn(130*side,false);//align with bottom flag
+	if(side==BLUESIDE)pTurn(170*side);
+	else pTurn(200*side);//align with bottom flag
 
 
 }
@@ -33,9 +34,9 @@ void nearAuton(int side){
 	clearTimer(T1);
 	nearAutonFirstHalf(side, false);
 	pDrive(-600);//hit bottom flag
-	pTurn(-80*side,false);
-	pDrive(1800);
-	pTurn(900*side);
+	pTurn(-150*side,false);
+	pDrive(1900);
+	pTurn(800*side);
 
 	drive(127);
 	wait1Msec(1400);
@@ -50,15 +51,19 @@ void nearAuton(int side){
 void prog(){
 	clearTimer(T1);
 	nearAutonFirstHalf(REDSIDE, true);
+
 	SensorValue[gyro]=0;
 	pDrive(-600);//hit bottom flag
+	liftPID.target=500;
 	pDrive(700);
+	motor[intake]=0;
 	clawPID.target=clawOpenPos;
 	pTurn(900,false);
 	pDrive(470);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(200);
 	pTurn(-900,false);
+
 	pDrive(300);
 	liftPID.target+=300;
 	startTask(rotatorTask);
@@ -77,9 +82,10 @@ void prog(){
 	drive(0);
 	motor[intake]=127;
 	pDrive(750);
+	getLiftOutOfTheWay()
 	motor[slingshot]=127;
-	pTurn(-150);
-	wait1Msec(300);
+	pTurn(-300);
+	wait1Msec(500);
 	motor[slingshot]=0;
 
 
@@ -95,13 +101,16 @@ void farAutonFirstHalf(int side){
 	clearTimer(T1);
 
 	motor[slingshot] = 127;
-	pTurn(580 * side);
+	startTask(liftControl);
+	if(side==BLUESIDE)pTurn(610*side);
+	else pTurn(580 * side);
 	wait1Msec(300);
 	motor[slingshot] = 0;
-	pTurn(-580 * side);
+	if(side==BLUESIDE)pTurn(-610*side);
+	else pTurn(-580 * side);
 	clawIdle = false;
 	startTask(clawTask);
-	startTask(liftControl);
+
 	clawPID.target=clawOpenPos+220;
 	startTask(rotatorTask);
 	rotatorPID.target=rotatorLowPos;
@@ -111,13 +120,14 @@ void farAutonFirstHalf(int side){
 	liftPID.target=550;//lower lift
 	//pDrive(-270);
 	pDrive(130);
-	pTurn(1000);
-	pDrive(400);
+	pTurn(1000*side);
+	pDrive(380);
 	clawPID.target=clawClosePos;//grab cap
 	liftPID.target+=300;
 	rotatorPID.target=rotatorHighPos;//flip cap
 	wait1Msec(500);
 	liftPID.target-=300;
+	if(side==BLUESIDE)pTurn(-160*side);
 	motor[intake] = 127;
 	clawPID.target=clawOpenPos;
 	getLiftOutOfTheWay();
@@ -131,13 +141,21 @@ void farAutonShoot(int side){
 	pDrive(-550);//back up to align on bar
 	motor[intake]=0;
 	drive(-50);
-	wait1Msec(300);
+	wait1Msec(600);
+	SensorValue[gyro]=0;
 	pDrive(150);
 	motor[slingshot]=127;
-	pTurn(-170);
-	wait1Msec(300);
+	if(side==BLUESIDE)pTurn(-130*side);
+	else pTurn(-190*side);
+	wait1Msec(500);
+	pDrive(100);
 
 	motor[slingshot]=0;
+	drive(-127);
+	wait1Msec(1500);
+	drive(127);
+	wait1Msec(150);
+	drive(0)
 
 
 	/**

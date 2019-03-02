@@ -184,7 +184,7 @@ float gyroValue(){
 // Turn a specified distace using PID
 
 PIDStruct gyroPID;
-void pTurn(int degrees, bool resetValue=true){
+void pTurn(int degrees, bool resetValue=false){
 	if(resetValue)SensorValue[gyro]=0;
 
 		gyroPID.target=degrees;

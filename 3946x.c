@@ -44,7 +44,7 @@ const int clawClosePos=2300;
 #include "auton.c"
 
 //LCD code variables
-int autonIndex=3;
+int autonIndex=1;
 string mainBattery;
 const int numAutons=8;
 string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFarShoot", "blueFarShoot", "redFarPark", "blueFarPark"};
