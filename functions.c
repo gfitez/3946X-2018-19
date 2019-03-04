@@ -128,7 +128,7 @@ task liftControl{
 				lift(127);
 				runPID=false;
 			}
-		}else if(vexRT[Btn6D] && liftPID.target>650){
+		}else if(vexRT[Btn6D] && liftPID.target>450){
 			liftPID.target-=1.5;
 			//if(liftPID.target<640)liftPID.target=640;
 		}

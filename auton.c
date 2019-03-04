@@ -6,12 +6,13 @@ void nearAutonFirstHalf(int side, bool flipCap){
 	startTask(clawTask);
 	clawPID.target=clawClosePos;
 	startTask(liftControl);
+	liftPID.target=liftOutOfTheWayHeight;
 
 	motor[intake]=127;
 	if(flipCap) pDrive(-1100);//back up to get first ball
 	else pDrive(-920);
 	motor[intake]=0;
-	if(flipCap) pDrive(1080);
+	if(flipCap) pDrive(1110);
 	else pDrive(900);
 
 	SensorValue[gyro]=0;
@@ -25,7 +26,7 @@ void nearAutonFirstHalf(int side, bool flipCap){
 	wait1Msec(150);//shoot second fllag
 	motor[slingshot]=0;
 	if(side==BLUESIDE)pTurn(170*side);
-	else pTurn(200*side);//align with bottom flag
+	else pTurn(170*side);//align with bottom flag
 
 
 }
@@ -51,44 +52,89 @@ void nearAuton(int side){
 void prog(){
 	clearTimer(T1);
 	nearAutonFirstHalf(REDSIDE, true);
-
+	liftPID.target+=100;
 	SensorValue[gyro]=0;
 	pDrive(-600);//hit bottom flag
+	pTurn(-200);
 	liftPID.target=500;
 	pDrive(700);
 	motor[intake]=0;
-	clawPID.target=clawOpenPos;
+	clawPID.target=clawOpenPos-200;
 	pTurn(900,false);
-	pDrive(470);
+	pDrive(370);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(200);
+	liftPID.target+=300;
 	pTurn(-900,false);
 
-	pDrive(300);
-	liftPID.target+=300;
+
+
 	startTask(rotatorTask);
 	rotatorPID.target=rotatorHighPos;//flip cap
 	wait1Msec(500);
 	liftPID.target-=300;
 	clawPID.target=clawOpenPos;
-	pDrive(-300);
+	pDrive(-200);
+
 	clawPID.target=clawClosePos;
-	clawIdle = true;
+	wait1Msec(250);
 	pTurn(900,false);
-	pDrive(670);
+	clawIdle = true;
+	pDrive(825);
 	pTurn(-900,false);
-	drive(-127);
+	liftPID.target+=100;//lift to avoid burning out intake
+	motor[intake]=127;
+	drive(-127);//back up to align on wall
 	wait1Msec(1000);
 	drive(0);
+	SensorValue[gyro]=0;//line up on wall
+
+	pDrive(700);
+	liftPID.target=liftOutOfTheWayHeight;
 	motor[intake]=127;
-	pDrive(750);
-	getLiftOutOfTheWay()
-	motor[slingshot]=127;
-	pTurn(-300);
+	motor[slingshot]=127;//shoot middle flag
+	pTurn(-220);
 	wait1Msec(500);
 	motor[slingshot]=0;
+	motor[intake]=0;
+	pTurn(975);//line up with next cap
+	clawIdle=false;
+	liftPID.target=500;
+	clawPID.target=clawOpenPos;
+	pDrive(1050);
+	clawPID.target=clawClosePos;//grab cap
+	wait1Msec(500);
+	liftPID.target+=400;
+	pTurn(-900);
+	rotatorPID.target=rotatorLowPos;//flip third cap
+	wait1Msec(750);
+	clawPID.target=clawOpenPos-200;
+	liftPID.target-=400;
+	pDrive(-200);
+	pTurn(900);
+	pDrive(250);
+	pTurn(-900);
+	drive(-127);//back up to hit third bottom flag
+	wait1Msec(1000);
+	drive(0);
+	SensorValue[gyro]=0;
 
+	//get to platform and park
+	clawPID.target=clawClosePos;
+	pDrive(500);
+	pTurn(900);
+	pDrive(300);
+	pTurn(-900);
+	pDrive(1600);
 
+	pTurn(-900);//turn to align with park
+	drive(50);
+	wait1Msec(3000);
+	drive(127);
+	wait1Msec(1400);
+	drive(-127);
+	wait1Msec(200);
+	drive(0);
 	//pTurn(900);
 	//pDrive(1000);
 
@@ -157,58 +203,6 @@ void farAutonShoot(int side){
 	wait1Msec(150);
 	drive(0)
 
-
-	/**
-	clawIdle = false;
-	rotatorPID.target=rotatorLowPos;
-	startTask(clawTask);
-	startTask(liftControl);
-	liftPID.target = 700;//put lift on ground for claw to grab cap
-	getLiftOutOfTheWay();
-	clawPID.target=clawClosePos;
-	startTask(rotatorTask);
-	rotatorPID.target=rotatorLowPos;
-	//put lift on ground for claw to grab cap
-	motor[intake] = 127;
-	pDrive(-1140);//back up to hit cap
-	pDrive(160);
-
-	pTurn(950 * side);//turn to face second cap
-
-	clawPID.target=clawOpenPos+140;
-	startTask(rotatorTask);
-	rotatorPID.target = rotatorLowPos;
-	motor[intake] = 0;
-	liftPID.target=400;//put lift on ground
-	pDrive(400);
-
-	clawPID.target=clawClosePos;//grap capa
-	wait1Msec(200);
-	rotatorPID.target=rotatorHighPos;
-	liftPID.target=850;
-	wait1Msec(500);
-	clawPID.target=clawOpenPos;
-	liftPID.target-=50;
-	pDrive(-230);
-	pTurn(-900*side);
-	pDrive(200);
-	//comment out below for no park
-
-	pTurn(-900*side);//tur to face park
-
-	clawPID.target=clawClosePos;
-
-	drive(127);
-	wait1msec(1325);
-	drive(-127);
-	wait1Msec(100);
-	drive(0);
-	stopTask(clawTask);
-	**/
-
-
-
-	//*/
 	autonTime=time1[T1];
 }
 
