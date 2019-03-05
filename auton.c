@@ -7,17 +7,18 @@ void nearAutonFirstHalf(int side, bool flipCap){
 	clawPID.target=clawClosePos;
 	startTask(liftControl);
 	liftPID.target=liftOutOfTheWayHeight;
+	if(flipCap)liftPID.target-=100;
 
 	motor[intake]=127;
-	if(flipCap) pDrive(-1100);//back up to get first ball
+	if(flipCap) pDrive(-1350);//back up to get first ball
 	else pDrive(-920);
 	motor[intake]=0;
-	if(flipCap) pDrive(1110);
+	if(flipCap) pDrive(1390);
 	else pDrive(900);
 
 	SensorValue[gyro]=0;
 	motor[slingshot]=127;
-	pTurn(870*side);//turn to align with flag
+	pTurn(850*side);//turn to align with flag
 	motor[slingshot] = 0;
 	motor[intake]=127;
 	wait1msec(400);
@@ -57,11 +58,15 @@ void prog(){
 	pDrive(-600);//hit bottom flag
 	pTurn(-200);
 	liftPID.target=500;
-	pDrive(700);
+	pDrive(630);
+	pTurn(900, false);
+	drive(-127);
+	wait1Msec(500);
+	drive(0);
+	SensorValue[gyro] = 0;
 	motor[intake]=0;
 	clawPID.target=clawOpenPos-200;
-	pTurn(900,false);
-	pDrive(370);
+	pDrive(570);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(200);
 	liftPID.target+=300;
@@ -80,7 +85,7 @@ void prog(){
 	wait1Msec(250);
 	pTurn(900,false);
 	clawIdle = true;
-	pDrive(825);
+	pDrive(815);
 	pTurn(-900,false);
 	liftPID.target+=100;//lift to avoid burning out intake
 	motor[intake]=127;
@@ -93,15 +98,15 @@ void prog(){
 	liftPID.target=liftOutOfTheWayHeight;
 	motor[intake]=127;
 	motor[slingshot]=127;//shoot middle flag
-	pTurn(-220);
+	pTurn(-240);
 	wait1Msec(500);
 	motor[slingshot]=0;
 	motor[intake]=0;
-	pTurn(975);//line up with next cap
+	pTurn(995);//line up with next cap
 	clawIdle=false;
 	liftPID.target=500;
 	clawPID.target=clawOpenPos;
-	pDrive(1050);
+	pDrive(1000);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(500);
 	liftPID.target+=400;
@@ -112,7 +117,7 @@ void prog(){
 	liftPID.target-=400;
 	pDrive(-200);
 	pTurn(900);
-	pDrive(250);
+	pDrive(150);
 	pTurn(-900);
 	drive(-127);//back up to hit third bottom flag
 	wait1Msec(1000);
@@ -121,19 +126,30 @@ void prog(){
 
 	//get to platform and park
 	clawPID.target=clawClosePos;
+
 	pDrive(500);
 	pTurn(900);
 	pDrive(300);
 	pTurn(-900);
 	pDrive(1600);
-
-	pTurn(-900);//turn to align with park
-	drive(50);
-	wait1Msec(3000);
-	drive(127);
-	wait1Msec(1400);
-	drive(-127);
+	liftPID.target=700;
 	wait1Msec(200);
+	pTurn(-900);//turn to align with park
+
+
+	//get on lower platform
+	drive(50);
+	wait1Msec(1000);
+	drive(127);
+	wait1Msec(1100);
+
+	//get on higher platform
+	drive(30);
+	wait1Msec(500);
+	drive(127);
+	wait1Msec(1000);
+	drive(-127);
+	wait1Msec(100);
 	drive(0);
 	//pTurn(900);
 	//pDrive(1000);
