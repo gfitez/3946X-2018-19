@@ -30,7 +30,7 @@ const int BLUESIDE=-1;
 const int liftOutOfTheWayHeight=800;
 
 const int fullPower=127;
-const int driveThreshold=10;
+const int driveThreshold=20;
 
 const int liftLowPos=850;
 
@@ -44,10 +44,10 @@ const int clawClosePos=100;
 #include "auton.c"
 
 //LCD code variables
-int autonIndex=1;
+int autonIndex=5;
 string mainBattery;
-const int numAutons=8;
-string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFarShoot", "blueFarShoot", "redFarPark", "blueFarPark"};
+const int numAutons=6;
+string autons[numAutons]={"none", "prog", "redNear", "blueNear", "redFarShoot", "blueFarShoot"};
 const short leftButton = 1;
 const short rightButton = 4;
 
@@ -120,14 +120,12 @@ void pre_auton(){
 
 task autonomous(){
 	bLCDBacklight = false;
-
+	SensorValue[gyro] = 0;
 	if(autonIndex==1)prog();
 	else if(autonIndex==2)nearAuton(REDSIDE);
 	else if(autonIndex==3)nearAuton(BLUESIDE);
 	else if(autonIndex==4)farAutonShoot(REDSIDE);
 	else if(autonIndex==5)farAutonShoot(BLUESIDE);
-	else if(autonIndex==6)farAutonPark(REDSIDE);
-	else if(autonIndex==7)farAutonPark(BLUESIDE);
 
 	//prog();
 	//farAuton(REDSIDE);
@@ -151,7 +149,7 @@ task usercontrol()
 	startTask(liftControl);
 	startTask(rotatorTask);
 	startTask(clawTask);
-	startTask(driveLocker);
+	//startTask(driveLocker);
 	rotatorPID.target=rotatorLowPos;
 	clawPID.target=clawClosePos;
   while (true)
@@ -171,9 +169,12 @@ task usercontrol()
 			lockDrive=false;
 			runLeftDrive(vexRT[Ch3]);
 			runRightDrive(vexRT[Ch2]);
-		}else{
-			lockDrive=true;
+		}else {
+			lockDrive = true;
+			drive(0);
 		}
+
+
 
 // Shooter control
 		if(vexRT[Btn6u] || vexRT[Btn8DXmtr2]){
