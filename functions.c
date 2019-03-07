@@ -184,7 +184,8 @@ float gyroValue(){
 // Turn a specified distace using PID
 
 PIDStruct gyroPID;
-void pTurn(int degrees, bool resetValue=false){
+void pTurn(int degrees, bool resetValue=false, int kicker = 2000){
+	clearTimer(T2);
 	if(resetValue)SensorValue[gyro]=0;
 
 		gyroPID.target=degrees;
@@ -193,7 +194,7 @@ void pTurn(int degrees, bool resetValue=false){
 
 		int counter=0;
 	// PID loop
-		while(counter<150){//loop until the robot has been in range for 300 msecs
+		while(counter<100 && time1[t2] < kicker){//loop until the robot has been in range for 300 msecs
 			if(abs(gyroPID.target-gyroPID.position)<80)counter++;//add another millisecond when the robot is in range
 			else counter=0;
 			gyroPID.position=gyroValue();

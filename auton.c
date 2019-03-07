@@ -15,7 +15,7 @@ void nearAutonFirstHalf(int side, bool flipCap){
 	motor[intake]=0;
 	if(flipCap) pDrive(1190);
 	else pDrive(1010);
-
+	rotatorPID.target=rotatorLowPos;
 	SensorValue[gyro]=0;
 	motor[slingshot]=127;
 	pTurn(850*side);//turn to align with flag
@@ -32,7 +32,7 @@ void nearAutonFirstHalf(int side, bool flipCap){
 
 }
 
-void nearAuton(int side){
+void nearAutonPark(int side){
 	clearTimer(T1);
 	nearAutonFirstHalf(side, false);
 	pDrive(-600);//hit bottom flag
@@ -49,6 +49,25 @@ void nearAuton(int side){
 
 	autonTime=time1[T1];
 
+}
+
+void nearAutonCap(int side){
+	clearTimer(T1);
+	startTask(rotatorTask);
+	nearAutonFirstHalf(side, false);
+	pDrive(-600);
+	pTurn(-150*side,false);
+	pDrive(500);
+	pTurn(-900*side, false);
+	pDrive(600);
+	clawPID.target=clawClosePos;//grab cap
+	wait1Msec(400);
+	liftPID.target+=300;
+	rotatorPID.target=rotatorHighPos;//flip cap
+	wait1Msec(500);
+	liftPID.target-=300;
+	clawPID.target=clawOpenPos;
+	pDrive(-200);
 }
 
 void prog(){
@@ -162,38 +181,45 @@ void prog(){
 void farAutonFirstHalf(int side){
 //red is 1, blue is -1
 	clearTimer(T1);
-
-	motor[slingshot] = 127;
+	startTask(clawTask);
+	clawPID.target=clawClosePos;
 	startTask(liftControl);
 	if(side==BLUESIDE)pTurn(610*side);
 	else pTurn(570 * side);
-	pDrive(100);
+	motor[slingshot] = 127;
+	if(side==BLUESIDE)pDrive(150);
+	else pDrive(120);
 	wait1Msec(100);
 	motor[slingshot] = 0;
 	pDrive(-100);
 	if(side==BLUESIDE)pTurn(-610*side);
 	else pTurn(-580 * side);
 	clawIdle = false;
-	startTask(clawTask);
-
 	clawPID.target=clawOpenPos;
 	startTask(rotatorTask);
-	rotatorPID.target=rotatorLowPos;
+	if(side==BLUESIDE) rotatorPID.target=rotatorHighPos;
+	else rotatorPID.target=rotatorLowPos;
 	motor[intake] = 127;
-	pDrive(-870);//back up to get first ball
-	liftPID.target=550;//lower lift
+	if(side==BLUESIDE) pDrive(-910);
+	else pDrive(-870);//back up to get first ball
+	liftPID.target=750;//lower lift
 	//pDrive(-270);
-	pDrive(100);
+	if(side==BLUESIDE) pDrive(130);
+	else pDrive(100);
+
+	if(side==BLUESIDE) pTurn(1100 * side);
+	else pTurn(1000*side);
 	motor[intake]=0;
-	pTurn(1000*side);
+	liftPID.target=550;
 	pDrive(380);
 	clawPID.target=clawClosePos;//grab cap
 	wait1Msec(400);
 	liftPID.target+=300;
-	rotatorPID.target=rotatorHighPos;//flip cap
+	if (side==BLUESIDE) rotatorPID.target=rotatorLowPos;
+	else rotatorPID.target=rotatorHighPos;//flip cap
 	wait1Msec(500);
 	liftPID.target-=300;
-	if(side==BLUESIDE)pTurn(-160*side);
+	if(side==BLUESIDE)pTurn(-160*side,false,500);
 	motor[intake] = 127;
 	clawPID.target=clawOpenPos;
 	getLiftOutOfTheWay();
@@ -201,49 +227,30 @@ void farAutonFirstHalf(int side){
 }
 
 // Auton to run in sqaure farthest to flag
-void farAutonShoot(int side){
+void farAuton(int side){
 //red is 1, blue is -1
 	farAutonFirstHalf(side);
-	pDrive(-550);//back up to align on bar
+	drive(-127);//back up to align on bar
+	wait1Msec(800);
 	motor[intake]=0;
 	drive(-50);
-	wait1Msec(600);
+	wait1Msec(300);
 	SensorValue[gyro]=0;
 	pDrive(150);
 	motor[intake]=127;
+	if(side==BLUESIDE)pTurn(-150*side,false,250);
+	else pTurn(-200*side,false,250);
 	motor[slingshot]=127;
-	if(side==BLUESIDE)pTurn(-130*side);
-	else pTurn(-190*side);
-	wait1Msec(160);
-	pDrive(100);
-
+	if(side==BLUESIDE) pDrive(80);
+	else pDrive(100);
+	wait1Msec(200);
 	motor[slingshot]=0;
 	drive(-127);
-	wait1Msec(1410);
+	if(side==BLUESIDE) wait1Msec(1310);
+	else wait1Msec(1410);
 	drive(127);
 	wait1Msec(100);
 	drive(0)
 
 	autonTime=time1[T1];
-}
-
-void farAutonPark(int side){
-	farAutonFirstHalf(side);
-	pDrive(-550);//back up to align on bar
-	motor[intake]=0;
-	drive(-50);
-	wait1Msec(300);
-	pDrive(150);
-
-	clawPID.target=clawClosePos;
-	liftPID.target+=200;
-	pTurn(1900);
-
-	drive(40);
-	wait1Msec(500);
-	drive(127);
-	wait1Msec(900);
-	drive(-127);
-	wait1Msec(100);
-	drive(0);
 }
