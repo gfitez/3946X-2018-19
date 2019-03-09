@@ -12,11 +12,11 @@ void nearAutonFirstHalf(int side, bool flipCap) {
     rotatorPID.target=rotatorLowPos;
     motor[intake]=127;
     if(flipCap) pDrive(-1150);//back up to get first ball
-    else pDrive(-930);
+    else pDrive(-910); //-930
     motor[intake]=0;
     if(flipCap) pDrive(1190);//drive back to starting square
     else if(side==BLUESIDE)pDrive(1050);
-    else pDrive(920);
+    else pDrive(900);
     SensorValue[gyro]=0;
     motor[slingshot]=127;
     pTurn(850*side);//turn to align with flag
@@ -40,7 +40,7 @@ void nearAutonPark(int side) {
     if(side==BLUESIDE)pTurn(0)
         else pTurn(-150*side,false);
 
-    if(side==BLUESIDE)pDrive(1800);//drive to align with park
+    if(side==BLUESIDE)pDrive(1850);//drive to align with park
     else pDrive(1850);
     pTurn(800*side);//turn to park
 
@@ -121,9 +121,9 @@ void prog() {
     wait1Msec(250);
     pTurn(900,false);
     clawIdle = true;
-    pDrive(775);
+    pDrive(825);
     pTurn(-900,false);
-    liftPID.target+=100;//lift to avoid burning out intake
+    liftPID.target+=200;//lift to avoid burning out intake
     motor[intake]=127;
     drive(-127);//back up to align on wall
     wait1Msec(1000);
@@ -153,7 +153,7 @@ void prog() {
     liftPID.target-=400;
     pDrive(-200);
     pTurn(900);
-    pDrive(230);
+    pDrive(210);
     pTurn(-900);
     drive(-127);//back up to hit third bottom flag
     wait1Msec(1000);
@@ -167,7 +167,7 @@ void prog() {
     pTurn(900);
     pDrive(300);
     pTurn(-900);
-    pDrive(1600);
+    pDrive(1580);
     liftPID.target=700;
     wait1Msec(200);
     pTurn(-900);//turn to align with park
@@ -180,10 +180,10 @@ void prog() {
     wait1Msec(1100);
 
     //get on higher platform
-    drive(30);
+    drive(20);
     wait1Msec(800);
     drive(127);
-    wait1Msec(1050);
+    wait1Msec(1020);
     drive(-127);
     wait1Msec(100);
     drive(0);
@@ -203,7 +203,7 @@ void farAutonFirstHalf(int side) {
     if(side==BLUESIDE)pTurn(610*side);
     else pTurn(570 * side);
     motor[slingshot] = 127;
-    if(side==BLUESIDE)pDrive(110);
+    if(side==BLUESIDE)pDrive(170);
     else pDrive(120);
     wait1Msec(400);
     motor[slingshot] = 0;
@@ -262,7 +262,7 @@ void farAuton(int side) {
     wait1Msec(350);
     motor[slingshot]=0;
     drive(-127);
-    if(side==BLUESIDE) wait1Msec(1410);
+    if(side==BLUESIDE) wait1Msec(1360);
     else wait1Msec(1420);
     drive(127);
     wait1Msec(100);

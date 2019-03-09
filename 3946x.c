@@ -39,7 +39,7 @@ const int driveThreshold = 20;
 
 const int liftLowPos = 850;
 
-const int clawOpenPos = 550;
+const int clawOpenPos = 650;
 const int clawClosePos = -100;
 
 #include "Vex_Competition_Includes.c"
@@ -47,7 +47,7 @@ const int clawClosePos = -100;
 #include "auton.c"
 
 //LCD code variables
-int autonIndex = 6;
+int autonIndex = 0;
 string mainBattery;
 const int numAutons = 8;
 string autons[numAutons] = {
@@ -158,7 +158,7 @@ task usercontrol() {
     startTask(liftControl);
     startTask(rotatorTask);
     startTask(clawTask);
-    //startTask(driveLocker);
+    startTask(driveLocker);
     rotatorPID.target = rotatorLowPos;
     clawPID.target = clawClosePos;
     while (true) {

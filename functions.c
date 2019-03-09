@@ -256,7 +256,7 @@ task driveLocker() {
         if(lockDrive) {
             drivePID.position=driveQuadAvg();
             int speed=getPIDSpeed(drivePID)*1.5
-                      if(abs(speed)>30)speed=30*sgn(speed);
+                      if(abs(speed)>20)speed=20*sgn(speed);
             drive(speed);
         } else {
             setDriveQuads(0);
